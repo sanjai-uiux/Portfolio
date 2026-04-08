@@ -1,1 +1,2371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Groworkz Mobile App — Case Study by Sanjai</title>
+<link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700,900&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --brand: #C0203E;
+    --brand-light: #F4D0D7;
+    --brand-dim: rgba(192,32,62,0.08);
+    --success: #1F9D55;
+    --success-light: rgba(31,157,85,0.14);
+    --ink: #0D0D0D;
+    --ink-60: rgba(13,13,13,0.74);
+    --ink-30: rgba(13,13,13,0.52);
+    --ink-10: rgba(13,13,13,0.07);
+    --surface: #FAFAF8;
+    --white: #FFFFFF;
+    --border: rgba(13,13,13,0.12);
+    --nav-h: 64px;
+    --font: 'Satoshi', sans-serif;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: var(--font);
+    font-size: 16px;
+    line-height: 1.55;
+    background: var(--surface);
+    color: var(--ink);
+    overflow-x: hidden;
+    cursor: none;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* ─── CURSOR ─────────────────────────────────────── */
+  #cursor-dot {
+    position: fixed; top: 0; left: 0; width: 8px; height: 8px;
+    background: rgba(13,13,13,0.78); border-radius: 50%;
+    pointer-events: none; z-index: 9999;
+    transform: translate(-50%, -50%);
+    transition: transform 0.1s, width 0.25s, height 0.25s, background 0.25s, border-radius 0.25s, opacity 0.25s;
+  }
+  #cursor-ring {
+    position: fixed; top: 0; left: 0; width: 36px; height: 36px;
+    border: 1px solid rgba(13,13,13,0.14); border-radius: 50%;
+    pointer-events: none; z-index: 9998;
+    transform: translate(-50%, -50%);
+    background: rgba(255,255,255,0.22);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 8px 24px rgba(13,13,13,0.08);
+    transition: transform 0.35s cubic-bezier(.25,.46,.45,.94), width 0.3s, height 0.3s, opacity 0.3s, border-radius 0.3s, background 0.3s, border-color 0.3s;
+  }
+  body.cursor-hover #cursor-dot { width: 9px; height: 9px; }
+  body.cursor-hover #cursor-ring { width: 48px; height: 48px; opacity: 0.78; }
+  body.cursor-view #cursor-dot {
+    width: 0; height: 0; opacity: 0;
+  }
+  body.cursor-view #cursor-ring {
+    width: 74px; height: 74px; border-radius: 24px;
+    background: rgba(255,255,255,0.16);
+    border-color: rgba(255,255,255,0.44);
+    opacity: 0.92;
+    box-shadow: 0 14px 34px rgba(13,13,13,0.10);
+  }
+  body.cursor-tap #cursor-dot {
+    width: 8px; height: 8px; background: rgba(13,13,13,0.72);
+  }
+  body.cursor-tap #cursor-ring {
+    width: 62px; height: 40px; border-radius: 999px;
+    background: rgba(255,255,255,0.20);
+    border-color: rgba(255,255,255,0.42);
+    opacity: 0.88;
+  }
+  body.cursor-drag #cursor-dot {
+    width: 14px; height: 14px; border-radius: 5px; background: rgba(13,13,13,0.72);
+    transform: translate(-50%, -50%) rotate(45deg);
+  }
+  body.cursor-drag #cursor-ring {
+    width: 84px; height: 44px; border-radius: 999px;
+    background: rgba(255,255,255,0.20);
+    border-color: rgba(255,255,255,0.42);
+    opacity: 0.9;
+  }
+  body.nav-native-cursor #cursor-dot,
+  body.nav-native-cursor #cursor-ring {
+    opacity: 0;
+  }
+
+  /* ─── NAV ─────────────────────────────────────────── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; height: var(--nav-h);
+    z-index: 100; display: flex; align-items: center;
+    justify-content: space-between; padding: 0 5vw;
+    background: rgba(250,250,248,0.88);
+    backdrop-filter: blur(18px);
+    border-bottom: 1px solid var(--border);
+    transition: box-shadow 0.3s;
+    cursor: default;
+  }
+  nav.scrolled { box-shadow: 0 2px 32px rgba(0,0,0,0.06); }
+  nav a,
+  nav button {
+    cursor: pointer;
+  }
+
+  .nav-logo {
+    font-size: 15px; font-weight: 700; letter-spacing: -0.3px;
+    color: var(--ink); text-decoration: none;
+    display: inline-flex; align-items: center; gap: 10px;
+    position: relative;
+  }
+  .nav-logo-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 12px;
+    border-radius: 999px;
+    border: 1px solid rgba(13,13,13,0.08);
+    background: rgba(255,255,255,0.78);
+    color: var(--ink);
+    min-width: 42px;
+    overflow: hidden;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateX(10px);
+    pointer-events: none;
+    transition: min-width 0.35s cubic-bezier(.25,.46,.45,.94), padding 0.35s cubic-bezier(.25,.46,.45,.94), background 0.25s, border-color 0.25s, color 0.25s, opacity 0.22s ease, transform 0.3s cubic-bezier(.25,.46,.45,.94), visibility 0.22s;
+  }
+  .nav-logo:hover .nav-logo-badge {
+    min-width: 118px;
+    padding-right: 14px;
+    background: var(--ink);
+    border-color: var(--ink);
+    color: var(--white);
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(0);
+  }
+  .nav-logo-arrow {
+    font-size: 16px;
+    line-height: 1;
+    transform: translateX(0);
+    transition: transform 0.35s cubic-bezier(.25,.46,.45,.94);
+  }
+  .nav-logo:hover .nav-logo-arrow {
+    transform: translateX(-2px);
+  }
+  .nav-logo-badge-text {
+    max-width: 0;
+    opacity: 0;
+    overflow: hidden;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    transition: max-width 0.35s cubic-bezier(.25,.46,.45,.94), opacity 0.2s ease;
+  }
+  .nav-logo:hover .nav-logo-badge-text {
+    max-width: 90px;
+    opacity: 1;
+  }
+  .nav-logo-title {
+    display: inline-flex;
+    align-items: center;
+  }
+  .nav-logo-title strong,
+  .nav-logo-title span {
+    font-weight: 700;
+  }
+
+  .nav-links { display: flex; gap: 36px; list-style: none; }
+  .nav-links a {
+    font-size: 13px; font-weight: 500; color: var(--ink-60);
+    text-decoration: none; letter-spacing: 0.2px;
+    transition: color 0.2s;
+    position: relative;
+  }
+  .nav-links a::after {
+    content: ''; position: absolute; bottom: -3px; left: 0; right: 0;
+    height: 1.5px; background: var(--brand);
+    transform: scaleX(0); transform-origin: left;
+    transition: transform 0.3s cubic-bezier(.25,.46,.45,.94);
+  }
+  .nav-links a:hover { color: var(--ink); }
+  .nav-links a:hover::after { transform: scaleX(1); }
+  .nav-links a.active { color: var(--brand); }
+  .nav-links a.active::after { transform: scaleX(1); }
+
+  /* ─── PROGRESS BAR ───────────────────────────────── */
+  #progress-bar {
+    position: fixed; top: var(--nav-h); left: 0; height: 2px;
+    background: var(--brand); z-index: 101; width: 0%;
+    transition: width 0.1s linear;
+  }
+
+  /* ─── SECTION BASE ───────────────────────────────── */
+  section {
+    padding: 120px 5vw;
+    position: relative;
+  }
+  section:nth-child(even) { background: var(--white); }
+
+  .section-label {
+    font-size: 11px; font-weight: 700; letter-spacing: 2px;
+    text-transform: uppercase; color: var(--brand);
+    margin-bottom: 28px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .section-label::before {
+    content: ''; display: inline-block;
+    width: 20px; height: 1.5px; background: var(--brand);
+  }
+
+  .section-num {
+    font-size: 10px; font-weight: 700; letter-spacing: 1.5px;
+    text-transform: uppercase; color: var(--ink-30);
+    margin-bottom: 16px;
+  }
+
+  /* ─── REVEAL ANIMATION ───────────────────────────── */
+  .reveal {
+    opacity: 0; transform: translateY(40px);
+    transition: opacity 0.8s cubic-bezier(.25,.46,.45,.94),
+                transform 0.8s cubic-bezier(.25,.46,.45,.94);
+  }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+  .reveal-delay-1 { transition-delay: 0.1s; }
+  .reveal-delay-2 { transition-delay: 0.2s; }
+  .reveal-delay-3 { transition-delay: 0.3s; }
+  .reveal-delay-4 { transition-delay: 0.4s; }
+  .reveal-delay-5 { transition-delay: 0.5s; }
+
+  /* ─── HERO ───────────────────────────────────────── */
+  #hero {
+    min-height: 100vh; padding: 0;
+    display: grid; grid-template-columns: 1fr 1fr;
+    align-items: stretch; overflow: hidden;
+  }
+
+  .hero-left {
+    padding: calc(var(--nav-h) + 80px) 5vw 80px 5vw;
+    display: flex; flex-direction: column; justify-content: center;
+    position: relative; z-index: 2;
+  }
+
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 11px; font-weight: 700; letter-spacing: 2px;
+    text-transform: uppercase; color: var(--brand);
+    background: var(--brand-dim);
+    border: 1px solid var(--brand-light);
+    padding: 8px 16px; border-radius: 100px;
+    margin-bottom: 40px;
+    width: fit-content;
+  }
+  .hero-badge-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--brand); animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.8); }
+  }
+
+  .hero-title {
+    font-size: clamp(52px, 6vw, 88px);
+    font-weight: 900; line-height: 1.0;
+    letter-spacing: -3px; color: var(--ink);
+    margin-bottom: 0;
+  }
+  .hero-title .accent { color: var(--brand); display: block; }
+
+  .hero-subtitle-wrapper {
+    margin: 32px 0 48px;
+    padding: 20px 24px 20px 28px;
+    border: 1px solid rgba(192,32,62,0.14);
+    border-radius: 22px;
+    background:
+      linear-gradient(135deg, rgba(192,32,62,0.08), rgba(255,255,255,0.78)),
+      var(--white);
+    box-shadow: 0 18px 40px rgba(13,13,13,0.04);
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.35s cubic-bezier(.25,.46,.45,.94),
+                box-shadow 0.35s cubic-bezier(.25,.46,.45,.94),
+                border-color 0.35s cubic-bezier(.25,.46,.45,.94);
+  }
+  .hero-subtitle-wrapper::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 16px;
+    bottom: 16px;
+    width: 4px;
+    border-radius: 999px;
+    background: linear-gradient(180deg, var(--brand), #f06a82);
+  }
+  .hero-subtitle-wrapper::after {
+    content: '';
+    position: absolute;
+    right: -60px;
+    top: -60px;
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(192,32,62,0.14), transparent 68%);
+    transition: transform 0.35s cubic-bezier(.25,.46,.45,.94);
+  }
+  .hero-subtitle-wrapper:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 28px 56px rgba(13,13,13,0.08);
+    border-color: rgba(192,32,62,0.3);
+  }
+  .hero-subtitle-wrapper:hover::after {
+    transform: scale(1.15);
+  }
+  .hero-subtitle {
+    font-size: 16px; font-weight: 400; line-height: 1.7;
+    color: var(--ink-60); max-width: 420px;
+    transition: color 0.3s ease;
+  }
+  .hero-subtitle-wrapper:hover .hero-subtitle { color: rgba(13,13,13,0.82); }
+
+  .hero-meta {
+    display: flex; gap: 40px; margin-bottom: 56px;
+  }
+  .hero-meta-item label {
+    display: block; font-size: 10px; font-weight: 700;
+    letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--ink-30); margin-bottom: 4px;
+  }
+  .hero-meta-item span {
+    font-size: 14px; font-weight: 500; color: var(--ink);
+  }
+
+  .hero-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+  .hero-tag {
+    font-size: 12px; font-weight: 500;
+    padding: 7px 14px; border-radius: 100px;
+    border: 1px solid var(--border);
+    color: var(--ink-60);
+    transition: all 0.25s;
+  }
+  .hero-tag:hover {
+    background: var(--ink); color: var(--white);
+    border-color: var(--ink);
+  }
+
+  .hero-right {
+    position: relative; overflow: hidden;
+    background: var(--ink);
+  }
+
+  .hero-phones {
+    position: absolute; inset: 0;
+    display: flex; align-items: flex-end;
+    justify-content: center; gap: 0;
+    padding-top: calc(var(--nav-h) + 40px);
+  }
+
+  .phone-frame {
+    position: relative;
+    border-radius: 0;
+    overflow: visible;
+    box-shadow: none;
+    transform-origin: bottom center;
+    transition: transform 0.6s cubic-bezier(.25,.46,.45,.94);
+  }
+  .phone-frame img {
+    display: block; width: 100%; height: 100%; object-fit: contain;
+    filter: drop-shadow(0 30px 60px rgba(0,0,0,0.36));
+  }
+  .image-placeholder {
+    width: 100%; height: 100%;
+    display: flex; align-items: center; justify-content: center;
+    text-align: center;
+    padding: 20px;
+    background:
+      linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02)),
+      repeating-linear-gradient(
+        -45deg,
+        rgba(255,255,255,0.04) 0,
+        rgba(255,255,255,0.04) 12px,
+        transparent 12px,
+        transparent 24px
+      );
+    color: rgba(255,255,255,0.7);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .image-placeholder.light {
+    background:
+      linear-gradient(135deg, rgba(255,255,255,0.9), rgba(244,208,215,0.45)),
+      repeating-linear-gradient(
+        -45deg,
+        rgba(192,32,62,0.06) 0,
+        rgba(192,32,62,0.06) 12px,
+        transparent 12px,
+        transparent 24px
+      );
+    color: var(--brand);
+  }
+  .image-placeholder span {
+    display: block;
+    max-width: 140px;
+    line-height: 1.5;
+  }
+  .phone-back {
+    width: 220px; height: 460px;
+    transform: translateX(46px) rotate(9deg) scale(0.92);
+    z-index: 1;
+  }
+  .phone-front {
+    width: 248px; height: 520px;
+    z-index: 2; transform: translateY(-18px);
+  }
+  .hero-right:hover .phone-back { transform: translateX(24px) rotate(5deg) scale(0.95) translateY(-10px); }
+  .hero-right:hover .phone-front { transform: translateY(-34px) rotate(-2deg) scale(1.02); }
+
+  .hero-scroll-hint {
+    position: absolute; bottom: 32px; left: 50%;
+    transform: translateX(-50%);
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    font-size: 10px; font-weight: 700; letter-spacing: 2px;
+    text-transform: uppercase; color: rgba(255,255,255,0.54);
+  }
+  .scroll-line {
+    width: 1px; height: 48px; background: rgba(255,255,255,0.15);
+    position: relative; overflow: hidden;
+  }
+  .scroll-line::after {
+    content: ''; position: absolute; top: -100%; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(255,255,255,0.72);
+    animation: scrollAnim 2s infinite;
+  }
+  @keyframes scrollAnim {
+    0% { top: -100%; } 100% { top: 100%; }
+  }
+
+  /* ─── OVERVIEW ───────────────────────────────────── */
+  #overview {
+    overflow: hidden;
+  }
+  #overview::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.35s cubic-bezier(.25,.46,.45,.94);
+  }
+  #overview.pattern-modules::before {
+    opacity: 1;
+    background:
+      linear-gradient(90deg,
+        rgba(192,32,62,0.05) 0%,
+        rgba(192,32,62,0.05) 7%,
+        transparent 7%,
+        transparent 14%,
+        rgba(192,32,62,0.035) 14%,
+        rgba(192,32,62,0.035) 21%,
+        transparent 21%,
+        transparent 28%,
+        rgba(192,32,62,0.045) 28%,
+        rgba(192,32,62,0.045) 35%,
+        transparent 35%,
+        transparent 42%,
+        rgba(192,32,62,0.03) 42%,
+        rgba(192,32,62,0.03) 49%,
+        transparent 49%,
+        transparent 100%
+      ),
+      linear-gradient(135deg, rgba(255,255,255,0.55), rgba(244,208,215,0.35));
+  }
+  #overview.pattern-screens::before {
+    opacity: 1;
+    background:
+      linear-gradient(rgba(13,13,13,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(13,13,13,0.04) 1px, transparent 1px),
+      linear-gradient(135deg, rgba(255,255,255,0.55), rgba(248,248,246,0.5));
+    background-size: 26px 26px, 26px 26px, auto;
+  }
+  #overview.pattern-system::before {
+    opacity: 1;
+    background:
+      linear-gradient(90deg,
+        transparent 0%,
+        transparent 45%,
+        rgba(26,111,160,0.09) 45%,
+        rgba(26,111,160,0.09) 55%,
+        transparent 55%,
+        transparent 100%
+      ),
+      linear-gradient(135deg, rgba(207,231,255,0.42), rgba(255,255,255,0.48));
+  }
+  #overview.pattern-features::before {
+    opacity: 1;
+    background:
+      linear-gradient(90deg,
+        transparent 0%,
+        transparent 14%,
+        rgba(154,106,26,0.07) 14%,
+        rgba(154,106,26,0.07) 24%,
+        transparent 24%,
+        transparent 34%,
+        rgba(154,106,26,0.06) 34%,
+        rgba(154,106,26,0.06) 44%,
+        transparent 44%,
+        transparent 54%,
+        rgba(154,106,26,0.07) 54%,
+        rgba(154,106,26,0.07) 64%,
+        transparent 64%,
+        transparent 100%
+      ),
+      linear-gradient(135deg, rgba(253,245,232,0.42), rgba(255,255,255,0.5));
+  }
+  #overview .inner {
+      max-width: 1200px; margin: 0 auto;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center;
+      position: relative; z-index: 1;
+    }
+
+  .overview-headline {
+    font-size: clamp(36px, 4vw, 60px);
+    font-weight: 900; letter-spacing: -2px; line-height: 1.05;
+  }
+  .overview-body {
+    font-size: 16px; line-height: 1.8; color: var(--ink-60);
+    margin-top: 24px;
+  }
+
+  .stats-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 2px;
+    background: var(--border);
+    border: 1px solid var(--border); border-radius: 16px; overflow: hidden;
+  }
+  .stat-card {
+    background: var(--white); padding: 32px 28px;
+    position: relative;
+    overflow: hidden;
+    transition: background 0.25s, transform 0.3s cubic-bezier(.25,.46,.45,.94), box-shadow 0.3s cubic-bezier(.25,.46,.45,.94);
+  }
+  .stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 30px rgba(13,13,13,0.05), inset 0 0 0 1px rgba(13,13,13,0.04);
+  }
+  .stat-card .val {
+    font-size: 48px; font-weight: 900; letter-spacing: -2px;
+    color: var(--brand); line-height: 1;
+  }
+  .stat-card .label {
+    font-size: 12px; font-weight: 500; color: var(--ink-60);
+    margin-top: 8px; letter-spacing: 0.3px; text-transform: uppercase;
+  }
+
+  /* ─── PROBLEM ────────────────────────────────────── */
+  #problem .inner {
+    max-width: 1200px; margin: 0 auto;
+  }
+
+  .problem-headline {
+    font-size: clamp(40px, 5vw, 72px);
+    font-weight: 900; letter-spacing: -3px; line-height: 1.0;
+    max-width: 700px;
+  }
+  .problem-headline em {
+    color: var(--brand);
+    font-style: normal;
+    position: relative;
+    display: inline-block;
+    white-space: nowrap;
+    line-height: 1.1;
+    transition: color 0.3s ease;
+  }
+  .problem-headline em .question-text,
+  .problem-headline em .answer-text {
+    display: inline-block;
+    white-space: nowrap;
+    transition: opacity 0.3s ease, transform 0.3s cubic-bezier(.25,.46,.45,.94);
+  }
+  .problem-headline em .answer-text {
+    position: absolute;
+    left: 0;
+    top: 0;
+    opacity: 0;
+    color: var(--success);
+    transform: translateY(8px);
+    text-shadow: 0 10px 24px var(--success-light);
+  }
+  .problem-headline:hover em .question-text {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  .problem-headline:hover em .answer-text {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .problem-desc {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 48px;
+    margin-top: 48px;
+  }
+  .problem-desc p {
+    font-size: 16px; line-height: 1.8; color: var(--ink-60);
+  }
+
+  .problem-quote {
+    margin: 72px 0;
+    padding: 48px 56px;
+    background: var(--ink);
+    border-radius: 20px;
+    position: relative; overflow: hidden;
+  }
+  .problem-quote::before {
+    content: '"'; position: absolute; top: -20px; left: 40px;
+    font-size: 240px; font-weight: 900; color: rgba(255,255,255,0.04);
+    line-height: 1; pointer-events: none;
+  }
+  .problem-quote p {
+    font-size: clamp(20px, 2.2vw, 28px);
+    font-weight: 700; color: var(--white);
+    line-height: 1.4; letter-spacing: -0.5px;
+    position: relative; z-index: 1;
+  }
+
+  .challenge-chips {
+    display: flex; flex-wrap: wrap; gap: 10px; margin-top: 40px;
+  }
+  .chip {
+    font-size: 13px; font-weight: 500; padding: 10px 20px;
+    border-radius: 100px; border: 1px solid var(--border);
+    color: var(--ink-60);
+    transition: all 0.3s cubic-bezier(.25,.46,.45,.94);
+    cursor: default;
+  }
+  .chip:hover {
+    background: var(--ink); color: var(--white);
+    border-color: var(--ink); transform: translateY(-2px);
+  }
+
+  /* ─── MY ROLE ────────────────────────────────────── */
+  #role .inner {
+    max-width: 1200px; margin: 0 auto;
+    display: grid; grid-template-columns: 1fr 1.2fr; gap: 80px; align-items: start;
+  }
+
+  .role-headline {
+    font-size: clamp(36px, 4vw, 60px);
+    font-weight: 900; letter-spacing: -2px; line-height: 1.05;
+  }
+  .role-body {
+    font-size: 16px; line-height: 1.8; color: var(--ink-60);
+    margin-top: 24px;
+  }
+
+  .role-skills {
+      display: flex; flex-direction: column; gap: 0;
+      margin-top: 48px;
+    }
+  .skill-row {
+      display: grid;
+      grid-template-columns: 64px 1fr 104px;
+      gap: 14px 20px;
+      align-items: center;
+      padding: 22px 0;
+      border-bottom: 1px solid var(--border);
+      transition: padding-left 0.3s, background 0.3s, border-color 0.3s;
+      position: relative;
+      border-radius: 18px;
+    }
+  .skill-row:hover {
+      padding-left: 12px;
+      background: linear-gradient(135deg, rgba(192,32,62,0.05), rgba(255,255,255,0.82));
+      border-color: rgba(192,32,62,0.16);
+    }
+  .skill-row:last-child { border-bottom: none; }
+  .skill-num {
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--brand);
+      min-width: 48px;
+      letter-spacing: -0.2px;
+    }
+  .skill-name {
+      font-size: 15px; font-weight: 600; color: var(--ink);
+      flex: 1;
+    }
+  .skill-level {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: var(--ink-30);
+      text-align: right;
+    }
+  .skill-summary {
+      display: contents;
+    }
+  .skill-meter {
+      grid-column: 2 / 4;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+  .skill-bar-wrap {
+      width: 100%;
+      height: 6px;
+      background: linear-gradient(90deg, rgba(13,13,13,0.06), rgba(13,13,13,0.03));
+      border-radius: 999px;
+      overflow: hidden;
+    }
+  .skill-bar {
+      height: 100%;
+      width: 0;
+      background: linear-gradient(90deg, var(--brand), #e34f6f);
+      border-radius: 999px;
+      transform: scaleX(0); transform-origin: left;
+      transition: transform 1s cubic-bezier(.25,.46,.45,.94);
+    }
+  .skill-bar.animate { transform: scaleX(1); }
+  .skill-bar-value {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--ink);
+      min-width: 42px;
+      text-align: right;
+    }
+  .skill-desc {
+      grid-column: 2 / 4;
+      font-size: 13px;
+      line-height: 1.6;
+      color: var(--ink-60);
+      max-height: 0;
+      opacity: 0;
+      overflow: hidden;
+      transform: translateY(-6px);
+      transition: max-height 0.35s cubic-bezier(.25,.46,.45,.94),
+                  opacity 0.3s ease,
+                  transform 0.35s cubic-bezier(.25,.46,.45,.94);
+      padding-right: 8px;
+    }
+  .skill-row:hover .skill-desc {
+      max-height: 90px;
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+  /* ─── TASK SECTION ───────────────────────────────── */
+  #task .inner { max-width: 1200px; margin: 0 auto; }
+
+  .task-title {
+    font-size: clamp(36px, 4vw, 58px);
+    font-weight: 900; letter-spacing: -2px; line-height: 1.05;
+    margin-bottom: 16px;
+  }
+  .task-title em { color: var(--brand); font-style: normal; }
+
+  .comparison-wrap {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-top: 64px;
+      align-items: start;
+      justify-items: center;
+    }
+
+  .compare-card {
+      border-radius: 20px; overflow: hidden;
+      border: 1px solid var(--border);
+      transition: transform 0.4s cubic-bezier(.25,.46,.45,.94), box-shadow 0.4s;
+      background: var(--white);
+      width: min(100%, 480px);
+    }
+  .compare-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 32px 64px rgba(0,0,0,0.08);
+  }
+  .compare-label {
+    padding: 14px 24px;
+    font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .compare-label.web {
+    background: var(--ink-10); color: var(--ink-60);
+  }
+  .compare-label.mobile {
+    background: #f5f5f5; color: var(--ink);
+  }
+  .compare-label .dot {
+    width: 6px; height: 6px; border-radius: 50%; background: currentColor;
+    opacity: 0.6;
+  }
+  .compare-screen {
+      width: 100%; overflow: hidden;
+      background: #1a1a1a;
+      display: flex; align-items: center; justify-content: center;
+      position: relative;
+    }
+  .compare-screen.web-shot {
+      aspect-ratio: 16 / 7.1;
+      background: #f6f7f9;
+      padding: 12px 16px;
+      align-items: center;
+      justify-content: center;
+    }
+  .compare-screen.mobile-shot {
+      aspect-ratio: 9 / 14.5;
+      background: #ffffff;
+      padding: 12px 18px 0;
+      align-items: flex-end;
+    }
+  .compare-screen img { width: 100%; height: 100%; object-fit: contain; }
+  .compare-screen.web-shot img {
+      width: auto;
+      max-width: 82%;
+      max-height: 82%;
+      border-radius: 18px;
+      box-shadow: 0 24px 60px rgba(19,25,38,0.18);
+    }
+  .compare-screen.mobile-shot img {
+      width: auto;
+      max-width: 82%;
+      max-height: 96%;
+      filter: drop-shadow(0 24px 42px rgba(0,0,0,0.34));
+    }
+  .compare-screen .image-placeholder { min-height: 100%; }
+  .compare-desc {
+    padding: 20px 24px;
+    font-size: 13px; line-height: 1.6; color: var(--ink-60);
+    background: var(--white);
+  }
+  .compare-desc strong { color: var(--ink); font-weight: 600; }
+
+  .task-screens {
+    margin-top: 64px;
+    display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px;
+  }
+  .task-screen-card {
+    border-radius: 28px; overflow: hidden;
+    background: #1a1a1a;
+    transition: transform 0.4s cubic-bezier(.25,.46,.45,.94), box-shadow 0.4s;
+    cursor: default;
+    position: relative;
+  }
+  .task-screen-card:hover {
+    transform: translateY(-12px) scale(1.02);
+    box-shadow: 0 40px 60px rgba(0,0,0,0.18);
+    z-index: 10;
+  }
+  .task-screen-card img { display: block; width: 100%; }
+  .task-screen-label {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    padding: 32px 16px 16px;
+    background: linear-gradient(transparent, rgba(0,0,0,0.7));
+    font-size: 11px; font-weight: 700; color: white;
+    text-align: center; letter-spacing: 1px;
+    text-transform: uppercase; opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .task-screen-card:hover .task-screen-label { opacity: 1; }
+
+  /* ─── PROCESS ────────────────────────────────────── */
+  #process .inner { max-width: 1200px; margin: 0 auto; }
+
+  .process-headline {
+    font-size: clamp(36px, 4vw, 58px);
+    font-weight: 900; letter-spacing: -2px; line-height: 1.05;
+  }
+  .process-body {
+    font-size: 16px; line-height: 1.8; color: var(--ink-60);
+    max-width: 580px; margin-top: 20px;
+  }
+
+  .process-steps {
+    display: grid; grid-template-columns: repeat(5, 1fr);
+    gap: 0; margin-top: 72px;
+    border: 1px solid var(--border); border-radius: 20px; overflow: hidden;
+  }
+  .process-step {
+    padding: 40px 28px; border-right: 1px solid var(--border);
+    transition: background 0.3s, transform 0.3s;
+    position: relative; cursor: default;
+  }
+  .process-step:last-child { border-right: none; }
+  .process-step:hover { background: var(--ink); }
+  .process-step:hover .step-num { color: rgba(255,255,255,0.3); }
+  .process-step:hover .step-title { color: white; }
+  .process-step:hover .step-desc { color: rgba(255,255,255,0.6); }
+  .step-num {
+    font-size: 40px; font-weight: 900; color: var(--ink-10);
+    letter-spacing: -2px; line-height: 1;
+    transition: color 0.3s;
+  }
+  .step-title {
+    font-size: 13px; font-weight: 700; color: var(--ink);
+    margin-top: 20px; margin-bottom: 12px; letter-spacing: -0.2px;
+    transition: color 0.3s;
+  }
+  .step-desc {
+    font-size: 12px; line-height: 1.6; color: var(--ink-60);
+    transition: color 0.3s;
+  }
+
+  /* ─── MODULES ────────────────────────────────────── */
+  #modules .inner { max-width: 1200px; margin: 0 auto; }
+
+  .modules-headline {
+    font-size: clamp(36px, 4vw, 58px);
+    font-weight: 900; letter-spacing: -2px; line-height: 1.05;
+  }
+
+  .module-list {
+    margin-top: 56px; border-top: 1px solid var(--border);
+  }
+  .module-row {
+    display: grid; grid-template-columns: 48px 200px 1fr auto;
+    gap: 24px; align-items: start;
+    padding: 24px 20px 24px 0; border-bottom: 1px solid var(--border);
+    transition: background 0.2s, padding-left 0.3s;
+    cursor: default;
+    border-radius: 0;
+    position: relative;
+  }
+  .module-row::before {
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+    width: 0; background: var(--brand-dim);
+    transition: width 0.3s;
+  }
+  .module-row:hover::before { width: 100%; }
+  .module-row:hover { padding-left: 16px; }
+  .mod-num {
+    font-size: 12px; font-weight: 700; color: var(--brand);
+    padding-top: 3px;
+    position: relative; z-index: 1;
+  }
+  .mod-name {
+    font-size: 15px; font-weight: 700; color: var(--ink);
+    position: relative; z-index: 1;
+  }
+  .mod-screens {
+    font-size: 12px; color: var(--ink-30);
+    font-weight: 500; margin-top: 4px;
+  }
+  .mod-desc {
+    font-size: 13px; line-height: 1.6; color: var(--ink-60);
+    position: relative; z-index: 1;
+  }
+  .mod-badge {
+    font-size: 10px; font-weight: 700; letter-spacing: 1px;
+    text-transform: uppercase; padding: 5px 12px; border-radius: 100px;
+    white-space: nowrap;
+    position: relative; z-index: 1;
+    margin-top: 2px;
+    margin-right: 4px;
+  }
+  .badge-core { background: #E8F4FD; color: #1a6fa0; }
+  .badge-adapted { background: #F0F7E8; color: #3a7a1a; }
+  .badge-new { background: var(--brand-dim); color: var(--brand); }
+  .badge-enhanced { background: #FDF5E8; color: #9a6a1a; }
+
+  /* ─── KEY DECISIONS ──────────────────────────────── */
+  #decisions .inner { max-width: 1200px; margin: 0 auto; }
+
+  .decisions-headline {
+    font-size: clamp(36px, 4vw, 58px);
+    font-weight: 900; letter-spacing: -2px; line-height: 1.05;
+    max-width: 600px;
+  }
+
+  .decisions-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
+    margin-top: 64px;
+  }
+  .decision-card {
+    border: 1px solid var(--border); border-radius: 20px;
+    padding: 40px; overflow: hidden; position: relative;
+    transition: box-shadow 0.4s, transform 0.4s;
+    background: var(--white);
+  }
+  .decision-card::after {
+    content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 3px;
+    background: var(--brand); transform: scaleX(0); transform-origin: left;
+    transition: transform 0.4s cubic-bezier(.25,.46,.45,.94);
+  }
+  .decision-card:hover {
+    box-shadow: 0 20px 48px rgba(0,0,0,0.08);
+    transform: translateY(-4px);
+  }
+  .decision-card:hover::after { transform: scaleX(1); }
+  .decision-card h3 {
+    font-size: 18px; font-weight: 700; color: var(--ink);
+    margin-bottom: 16px; letter-spacing: -0.3px;
+  }
+  .decision-card p {
+    font-size: 14px; line-height: 1.7; color: var(--ink-60);
+  }
+
+  /* ─── COMPARISON TABLE ───────────────────────────── */
+  #comparison .inner { max-width: 1200px; margin: 0 auto; }
+
+  .comparison-headline {
+    font-size: clamp(36px, 4vw, 58px);
+    font-weight: 900; letter-spacing: -2px; line-height: 1.05;
+  }
+  .comparison-headline em { color: var(--brand); font-style: normal; }
+
+  .comp-table {
+    margin-top: 64px;
+    width: 100%;
+    padding: 14px;
+    border: 1px solid rgba(13,13,13,0.08);
+    border-radius: 28px;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.96), rgba(247,246,243,0.96));
+    box-shadow:
+      0 22px 60px rgba(13,13,13,0.05),
+      inset 0 1px 0 rgba(255,255,255,0.8);
+    overflow-x: auto;
+  }
+  .comp-table table {
+    width: 100%;
+    min-width: 860px;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: var(--white);
+    border: 1px solid rgba(13,13,13,0.06);
+    border-radius: 20px;
+    overflow: hidden;
+  }
+  .comp-table thead th {
+    padding: 18px 24px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.3px;
+    text-transform: uppercase;
+    background: #f4f2ed;
+    color: rgba(13,13,13,0.56);
+    text-align: left;
+    border-bottom: 1px solid rgba(13,13,13,0.08);
+  }
+  .comp-table thead th:first-child {
+    color: var(--ink);
+    width: 18%;
+  }
+  .comp-table thead th:nth-child(2) { width: 38%; }
+  .comp-table thead th.highlight {
+    color: var(--ink);
+    background: #eef4ef;
+  }
+  .comp-table tbody tr {
+    transition: transform 0.25s cubic-bezier(.25,.46,.45,.94), box-shadow 0.25s, background 0.25s;
+  }
+  .comp-table tbody tr:nth-child(odd) td { background: #fcfbf8; }
+  .comp-table tbody tr:hover td {
+    background: #f7f5ef;
+  }
+  .comp-table td {
+    padding: 22px 24px;
+    font-size: 14px;
+    color: var(--ink-60);
+    vertical-align: top;
+    line-height: 1.65;
+    border-bottom: 1px solid rgba(13,13,13,0.06);
+  }
+  .comp-table tbody tr:last-child td { border-bottom: none; }
+  .comp-table td:first-child {
+    font-weight: 700;
+    color: var(--ink);
+    letter-spacing: -0.2px;
+    background: #f7f4ee;
+  }
+  .comp-table td:nth-child(2) {
+    color: rgba(13,13,13,0.58);
+  }
+  .comp-table td:last-child {
+    color: var(--ink);
+    font-weight: 600;
+    background: #f3f8f3;
+    box-shadow: inset 1px 0 0 rgba(31,157,85,0.08);
+  }
+
+  /* ─── POST-CALL FEATURE ──────────────────────────── */
+  #postcall .inner { max-width: 1200px; margin: 0 auto; }
+
+  .postcall-header {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: start;
+  }
+  .postcall-title {
+    font-size: clamp(36px, 4vw, 58px);
+    font-weight: 900; letter-spacing: -2px; line-height: 1.05;
+  }
+  .postcall-title em { color: var(--brand); font-style: normal; display: block; }
+  .postcall-desc {
+    font-size: 16px; line-height: 1.8; color: var(--ink-60);
+    padding-top: 8px;
+  }
+
+  .postcall-flow {
+    margin-top: 64px; display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 0; border: 1px solid var(--border); border-radius: 20px; overflow: hidden;
+  }
+  .flow-step {
+    padding: 32px 28px; border-right: 1px solid var(--border);
+    transition: background 0.3s;
+  }
+  .flow-step:last-child { border-right: none; }
+  .flow-step:hover { background: var(--ink); }
+  .flow-step:hover .flow-title { color: white; }
+  .flow-step:hover .flow-body { color: rgba(255,255,255,0.72); }
+  .flow-title { font-size: 14px; font-weight: 700; color: var(--ink); margin-bottom: 8px; transition: color 0.3s; }
+  .flow-title {
+    display: block;
+  }
+  .flow-body { font-size: 12px; line-height: 1.6; color: var(--ink-60); transition: color 0.3s; }
+
+  .categories-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 24px;
+    margin-top: 48px;
+  }
+  .postcall-gallery {
+    display: flex;
+    gap: 22px;
+    margin-top: 48px;
+    padding: 12px 0 22px;
+    overflow-x: auto;
+    overflow-y: visible;
+    scrollbar-width: none;
+  }
+  .postcall-gallery::-webkit-scrollbar { display: none; }
+  .postcall-phone {
+    flex-shrink: 0;
+    width: 218px;
+    position: relative;
+    padding-bottom: 52px;
+    transition: transform 0.35s cubic-bezier(.25,.46,.45,.94);
+  }
+  .postcall-phone:hover {
+    transform: translateY(-8px);
+  }
+  .postcall-phone img {
+    display: block;
+    width: 100%;
+    height: auto;
+    filter: drop-shadow(0 26px 42px rgba(0,0,0,0.16));
+    transition: transform 0.35s cubic-bezier(.25,.46,.45,.94), filter 0.35s cubic-bezier(.25,.46,.45,.94);
+  }
+  .postcall-phone:hover img {
+    transform: scale(1.015);
+    filter: drop-shadow(0 34px 54px rgba(0,0,0,0.22));
+  }
+  .postcall-caption {
+    position: absolute;
+    left: 50%;
+    bottom: 0;
+    transform: translateX(-50%);
+    padding: 10px 16px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.92);
+    border: 1px solid rgba(13,13,13,0.08);
+    box-shadow: 0 10px 24px rgba(13,13,13,0.08);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--ink);
+    white-space: nowrap;
+  }
+  .cat-block {
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.98), rgba(249,247,243,0.96));
+    border: 1px solid rgba(13,13,13,0.08);
+    border-radius: 24px;
+    padding: 30px;
+    box-shadow: 0 18px 46px rgba(13,13,13,0.05);
+    transition: transform 0.3s cubic-bezier(.25,.46,.45,.94), box-shadow 0.3s cubic-bezier(.25,.46,.45,.94);
+  }
+  .cat-block:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 24px 58px rgba(13,13,13,0.08);
+  }
+  .cat-block h4 {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--ink-30);
+    margin-bottom: 18px;
+  }
+  .cat-lead {
+    font-size: 15px;
+    line-height: 1.7;
+    color: var(--ink-60);
+    margin-bottom: 20px;
+  }
+  .cat-item {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    padding: 14px 14px;
+    border: 1px solid rgba(13,13,13,0.06);
+    border-radius: 18px;
+    background: rgba(255,255,255,0.76);
+    margin-bottom: 12px;
+    transition: transform 0.25s cubic-bezier(.25,.46,.45,.94), box-shadow 0.25s, border-color 0.25s;
+  }
+  .cat-item:last-child { margin-bottom: 0; }
+  .cat-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 28px rgba(13,13,13,0.06);
+    border-color: rgba(192,32,62,0.14);
+  }
+  .cat-copy { min-width: 0; }
+  .cat-item-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 3px;
+  }
+  .cat-item-desc {
+    font-size: 13px;
+    color: var(--ink-60);
+    line-height: 1.55;
+  }
+
+  /* ─── OUTCOMES ───────────────────────────────────── */
+  #outcomes { background: var(--ink); }
+  #outcomes .section-label { color: var(--brand); }
+  #outcomes .inner { max-width: 1200px; margin: 0 auto; }
+
+  .outcomes-headline {
+    font-size: clamp(36px, 4vw, 58px);
+    font-weight: 900; letter-spacing: -2px; line-height: 1.05;
+    color: var(--white);
+  }
+
+  .outcomes-body {
+    font-size: 16px; line-height: 1.8; color: rgba(255,255,255,0.74);
+    max-width: 560px; margin-top: 20px;
+  }
+
+  .outcomes-stats {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 2px;
+    margin-top: 64px; background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08); border-radius: 20px; overflow: hidden;
+  }
+  .outcome-stat {
+    padding: 48px 36px; background: #111;
+    transition: background 0.3s;
+  }
+  .outcome-stat:hover { background: var(--brand); }
+  .outcome-stat:hover .o-val { color: white; }
+  .outcome-stat:hover .o-label { color: rgba(255,255,255,0.7); }
+  .o-val {
+    font-size: 64px; font-weight: 900; letter-spacing: -3px;
+    color: var(--brand); line-height: 1;
+    transition: color 0.3s;
+  }
+  .o-label {
+    font-size: 12px; font-weight: 500; color: rgba(255,255,255,0.68);
+    margin-top: 12px; line-height: 1.5; text-transform: uppercase; letter-spacing: 0.5px;
+    transition: color 0.3s;
+  }
+
+  /* ─── LEARNINGS ──────────────────────────────────── */
+  #learnings .inner { max-width: 1200px; margin: 0 auto; }
+
+  .learnings-headline {
+    font-size: clamp(36px, 4vw, 58px);
+    font-weight: 900; letter-spacing: -2px; line-height: 1.05;
+  }
+
+  .learnings-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px;
+    margin-top: 64px;
+  }
+  .learning-card {
+    padding: 48px 36px;
+    border: 1px solid var(--border); border-radius: 20px;
+    background: var(--white);
+    transition: all 0.4s cubic-bezier(.25,.46,.45,.94);
+    position: relative; overflow: hidden;
+  }
+  .learning-card::before {
+    content: ''; position: absolute; inset: 0;
+    background: var(--ink);
+    transform: translateY(100%);
+    transition: transform 0.4s cubic-bezier(.25,.46,.45,.94);
+  }
+  .learning-card:hover::before { transform: translateY(0); }
+  .learning-card:hover .l-num { color: rgba(255,255,255,0.15); }
+  .learning-card:hover .l-title { color: white; }
+  .learning-card:hover .l-body { color: rgba(255,255,255,0.72); }
+  .l-num {
+    font-size: 72px; font-weight: 900; letter-spacing: -4px;
+    color: var(--ink-10); line-height: 1;
+    position: relative; z-index: 1;
+    transition: color 0.4s;
+  }
+  .l-title {
+    font-size: 18px; font-weight: 700; color: var(--ink);
+    margin-top: 8px; margin-bottom: 16px; letter-spacing: -0.3px;
+    position: relative; z-index: 1;
+    transition: color 0.4s;
+  }
+  .l-body {
+    font-size: 14px; line-height: 1.7; color: var(--ink-60);
+    position: relative; z-index: 1;
+    transition: color 0.4s;
+  }
+
+  /* ─── FOOTER ─────────────────────────────────────── */
+  footer {
+    background: var(--ink); color: white;
+    padding: 80px 5vw;
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 32px;
+  }
+  .footer-left { max-width: 480px; }
+  .footer-title {
+    font-size: clamp(28px, 3vw, 44px); font-weight: 900;
+    letter-spacing: -1.5px; line-height: 1.05;
+  }
+  .footer-title span { color: var(--brand); }
+  .footer-sub {
+    font-size: 15px; color: rgba(255,255,255,0.72);
+    margin-top: 12px; line-height: 1.6;
+  }
+  .footer-meta {
+    font-size: 12px; color: rgba(255,255,255,0.5);
+    margin-top: 48px;
+  }
+  .footer-note {
+    font-size: 12px;
+    color: rgba(255,255,255,0.62);
+    margin-top: 14px;
+    line-height: 1.7;
+    max-width: 520px;
+  }
+
+  /* ─── READABILITY PASS ─────────────────────────── */
+  .section-label,
+  .hero-badge,
+  .compare-label,
+  .cat-block h4,
+  .postcall-caption {
+    font-size: 12px;
+  }
+  .section-num,
+  .hero-meta-item label,
+  .mod-badge,
+  .task-screen-label,
+  .footer-meta,
+  .footer-note {
+    font-size: 11px;
+  }
+  .nav-links a,
+  .hero-tag,
+  .chip,
+  .compare-desc,
+  .step-desc,
+  .flow-body,
+  .mod-desc,
+  .cat-item-desc,
+  .cat-lead,
+  .l-body {
+    font-size: 14px;
+  }
+  .mod-screens,
+  .skill-level,
+  .skill-bar-value,
+  .skill-desc,
+  .comp-table td,
+  .comp-table td:nth-child(2),
+  .comp-table td:last-child {
+    font-size: 13px;
+  }
+  .overview-body,
+  .problem-desc p,
+  .role-body,
+  .process-body,
+  .postcall-desc {
+    color: var(--ink-60);
+  }
+  .hero-meta-item label,
+  .mod-screens,
+  .cat-block h4,
+  .skill-level,
+  .section-num {
+    color: var(--ink-30);
+  }
+
+  /* ─── PARALLAX SCREENS ───────────────────────────── */
+  .parallax-phones {
+      display: flex; gap: 20px;
+      margin-top: 64px;
+      overflow-x: auto;
+      overflow-y: visible;
+      padding: 18px 0 92px;
+      scrollbar-width: none;
+      align-items: flex-start;
+    }
+  .parallax-phones::-webkit-scrollbar { display: none; }
+  .para-phone {
+      flex-shrink: 0;
+      width: 220px;
+      position: relative;
+      overflow: visible;
+      background: transparent;
+      box-shadow: none;
+      padding-bottom: 54px;
+      transition: transform 0.4s cubic-bezier(.25,.46,.45,.94), width 0.4s cubic-bezier(.25,.46,.45,.94);
+    }
+  .para-phone:hover {
+      width: 232px;
+      transform: translateY(-4px);
+      z-index: 3;
+    }
+  .para-phone img {
+      display: block;
+      width: 100%;
+      height: auto;
+      filter: drop-shadow(0 24px 42px rgba(0,0,0,0.18));
+      transition: transform 0.4s cubic-bezier(.25,.46,.45,.94), filter 0.4s cubic-bezier(.25,.46,.45,.94);
+    }
+  .para-phone:hover img {
+      transform: scale(1.015);
+      filter: drop-shadow(0 32px 54px rgba(0,0,0,0.22));
+    }
+  .para-phone-label {
+      position: absolute;
+      left: 50%;
+      bottom: 0;
+      transform: translateX(-50%) translateY(10px);
+      padding: 10px 16px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--ink);
+      background: rgba(255,255,255,0.92);
+      border: 1px solid rgba(13,13,13,0.08);
+      border-radius: 999px;
+      white-space: nowrap;
+      box-shadow: 0 10px 24px rgba(13,13,13,0.08);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease, transform 0.3s cubic-bezier(.25,.46,.45,.94);
+    }
+  .para-phone:hover .para-phone-label {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+  .para-phone .image-placeholder {
+      aspect-ratio: 9/19.5;
+      min-height: 420px;
+    }
+
+  /* ─── HORIZONTAL SCROLL SECTION ─────────────────── */
+  .hscroll-track {
+    display: flex; gap: 24px;
+    overflow-x: auto; padding: 16px 0 40px;
+    scrollbar-width: none; cursor: grab;
+  }
+  .hscroll-track::-webkit-scrollbar { display: none; }
+  .hscroll-track:active { cursor: grabbing; }
+
+  /* ─── UTILITIES ──────────────────────────────────── */
+  .mt-8 { margin-top: 8px; }
+  .mt-16 { margin-top: 16px; }
+  .mt-24 { margin-top: 24px; }
+
+  .back-to-top {
+    position: fixed;
+    right: 28px;
+    bottom: 28px;
+    width: 54px;
+    height: 54px;
+    border: 1px solid rgba(13,13,13,0.08);
+    border-radius: 999px;
+    background: rgba(255,255,255,0.92);
+    color: var(--ink);
+    box-shadow: 0 18px 40px rgba(13,13,13,0.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 120;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(16px);
+    transition: opacity 0.25s ease, transform 0.25s cubic-bezier(.25,.46,.45,.94), visibility 0.25s;
+  }
+  .back-to-top:hover {
+    transform: translateY(0) scale(1.04);
+    background: var(--brand);
+    color: var(--white);
+    border-color: transparent;
+  }
+  .back-to-top.visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+  .back-to-top svg {
+    width: 20px;
+    height: 20px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  @media (max-width: 900px) {
+    #hero { grid-template-columns: 1fr; }
+    .hero-right { height: 60vh; }
+    .phone-back { width: 160px; height: 340px; }
+    .phone-front { width: 180px; height: 380px; }
+    .hero-subtitle-wrapper { padding: 18px 20px 18px 24px; }
+    .overview-inner, #role .inner, #task .inner { grid-template-columns: 1fr; }
+    .skill-row { grid-template-columns: 56px 1fr; }
+    .skill-level { text-align: left; }
+    .skill-summary { display: grid; grid-template-columns: 56px 1fr; gap: 6px 16px; align-items: center; }
+    .skill-summary .skill-level { grid-column: 2; }
+    .skill-meter, .skill-desc { grid-column: 2; }
+    .task-screens { grid-template-columns: repeat(3, 1fr); }
+    .process-steps, .postcall-flow { grid-template-columns: 1fr 1fr; }
+    .outcomes-stats { grid-template-columns: 1fr 1fr; }
+    .learnings-grid { grid-template-columns: 1fr; }
+    .nav-links { display: none; }
+    .back-to-top {
+      right: 18px;
+      bottom: 18px;
+      width: 48px;
+      height: 48px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div id="cursor-dot"></div>
+<div id="cursor-ring"></div>
+<div id="progress-bar"></div>
+<button class="back-to-top" id="backToTop" aria-label="Back to top">
+  <svg viewBox="0 0 24 24">
+    <path d="M12 19V5"></path>
+    <path d="M6 11l6-6 6 6"></path>
+  </svg>
+</button>
+
+<!-- NAV -->
+<nav id="main-nav">
+  <a href="#hero" class="nav-logo" id="navGoBack">
+    <span class="nav-logo-badge" aria-hidden="true">
+      <span class="nav-logo-arrow">←</span>
+      <span class="nav-logo-badge-text">Go Back</span>
+    </span>
+    <span class="nav-logo-title"><strong>Casestudy</strong></span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="#overview" data-section="overview">Overview</a></li>
+    <li><a href="#problem" data-section="problem">Problem</a></li>
+    <li><a href="#task" data-section="task">Task</a></li>
+    <li><a href="#modules" data-section="modules">Modules</a></li>
+    <li><a href="#decisions" data-section="decisions">Decisions</a></li>
+    <li><a href="#outcomes" data-section="outcomes">Outcomes</a></li>
+    <li><a href="#learnings" data-section="learnings">Learnings</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-left">
+    <div class="hero-badge reveal">
+      <span class="hero-badge-dot"></span>
+      UX · UI Case Study · 2026
+    </div>
+    <h1 class="hero-title reveal reveal-delay-1">
+      Groworkz
+      <span class="accent">Mobile APP</span>
+    </h1>
+    <div class="hero-subtitle-wrapper reveal reveal-delay-2">
+      <p class="hero-subtitle">Redesigning a 20-module enterprise SaaS platform for mobile — every state, every flow. Web portal to native app in 2 months.</p>
+    </div>
+    <div class="hero-meta reveal reveal-delay-3">
+      <div class="hero-meta-item">
+        <label>Duration</label>
+        <span>2 Months</span>
+      </div>
+      <div class="hero-meta-item">
+        <label>Platform</label>
+        <span>iOS · Android</span>
+      </div>
+      <div class="hero-meta-item">
+        <label>Role</label>
+        <span>Solo Designer</span>
+      </div>
+    </div>
+    <div class="hero-tags reveal reveal-delay-4">
+      <span class="hero-tag">UI Design</span>
+      <span class="hero-tag">UX Research</span>
+      <span class="hero-tag">Product Thinking</span>
+      <span class="hero-tag">Figma</span>
+      <span class="hero-tag">Infygain Technologies</span>
+    </div>
+  </div>
+  <div class="hero-right">
+    <div class="hero-phones">
+      <div class="phone-frame phone-back">
+        <img src="hero-calendar.png" alt="Groworkz calendar app screen">
+      </div>
+      <div class="phone-frame phone-front">
+        <img src="hero-home.png" alt="Groworkz home app screen">
+      </div>
+    </div>
+    <div class="hero-scroll-hint">
+      <div class="scroll-line"></div>
+      Scroll
+    </div>
+  </div>
+</section>
+
+<!-- OVERVIEW -->
+<section id="overview">
+  <div class="inner">
+    <div class="reveal">
+      <div class="section-label">01 — Overview</div>
+      <h2 class="overview-headline">A Complete Enterprise Tool, Redesigned For Your Pocket.</h2>
+      <p class="overview-body">Groworkz is an all-in-one SaaS platform used by businesses to manage tasks, projects, clients, HR workflows, inventory, logistics, and more — all from a single web portal. My assignment was to design the complete mobile version of the platform, adapting every major module to a thumb-friendly, context-aware mobile experience without losing the depth of functionality that enterprise users depend on.</p>
+    </div>
+    <div class="stats-grid reveal reveal-delay-2">
+      <div class="stat-card" data-overview-pattern="modules">
+        <div class="val">14+</div>
+        <div class="label">Core Modules Designed</div>
+      </div>
+      <div class="stat-card" data-overview-pattern="screens">
+        <div class="val">200+</div>
+        <div class="label">Unique Screens Delivered</div>
+      </div>
+      <div class="stat-card" data-overview-pattern="system">
+        <div class="val">1</div>
+        <div class="label">Unified Design System</div>
+      </div>
+      <div class="stat-card" data-overview-pattern="features">
+        <div class="val">3</div>
+        <div class="label">Net-New Mobile Features</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROBLEM -->
+<section id="problem">
+  <div class="inner">
+    <div class="section-label reveal">02 — Problem Statement</div>
+    <h2 class="problem-headline reveal reveal-delay-1">Enterprise Depth Doesn't Fit A 390px Screen.<br><em><span class="question-text">Or Does It?</span><span class="answer-text">Yes, It Does.</span></em></h2>
+    <div class="problem-desc reveal reveal-delay-2">
+      <p>The Groworkz web platform is feature-dense by design. Side navigation with 20+ menu items, modal dialogs for every form, data tables with pagination — all built for large displays and mouse interaction.</p>
+      <p>The business need was clear: field teams, managers, and employees needed to access and action tasks, raise requests, check attendance, and respond to tickets while away from their desks. The existing web UI simply didn't translate.</p>
+    </div>
+    <div class="problem-quote reveal reveal-delay-3">
+      <p>"How Do You Preserve The Full Capability Of a 20-Module Enterprise SaaS Platform When All You Have Is A 390 × 844 Screen And A Thumb?"</p>
+    </div>
+    <div class="challenge-chips reveal reveal-delay-4">
+      <span class="chip">Information overload</span>
+      <span class="chip">Navigation complexity</span>
+      <span class="chip">Modal + page conversion</span>
+      <span class="chip">Form density on small screens</span>
+      <span class="chip">Approval workflows on mobile</span>
+      <span class="chip">Real-time time tracking</span>
+    </div>
+  </div>
+</section>
+
+<!-- MY ROLE -->
+<section id="role">
+  <div class="inner">
+    <div>
+      <div class="section-label reveal">03 — My Role</div>
+      <h2 class="role-headline reveal reveal-delay-1">End-To-End Ownership Across Design &amp; Product Thinking.</h2>
+      <p class="role-body reveal reveal-delay-2">As the sole designer on this project, I was responsible for the entire mobile design — from analysing the existing web platform &amp; planning the information architecture for mobile, to delivering every screen in Figma. I also contributed product thinking on areas where the web patterns didn't map cleanly to mobile conventions.</p>
+    </div>
+      <div class="role-skills reveal reveal-delay-2">
+      <div class="skill-row">
+        <div class="skill-summary">
+          <span class="skill-num">95%</span>
+          <span class="skill-name">UI Design</span>
+          <span class="skill-level">Lead Strength</span>
+        </div>
+        <div class="skill-meter">
+          <div class="skill-bar-wrap"><div class="skill-bar" data-width="95"></div></div>
+          <span class="skill-bar-value">95</span>
+        </div>
+        <div class="skill-desc">Designed high-fidelity mobile screens end to end, balancing clarity, hierarchy, and native mobile patterns across dense enterprise workflows.</div>
+      </div>
+      <div class="skill-row">
+        <div class="skill-summary">
+          <span class="skill-num">80%</span>
+          <span class="skill-name">UX Research</span>
+          <span class="skill-level">Strong</span>
+        </div>
+        <div class="skill-meter">
+          <div class="skill-bar-wrap"><div class="skill-bar" data-width="80"></div></div>
+          <span class="skill-bar-value">80</span>
+        </div>
+        <div class="skill-desc">Audited the existing web product, identified pain points in navigation and density, and used that understanding to reshape flows for mobile contexts.</div>
+      </div>
+      <div class="skill-row">
+        <div class="skill-summary">
+          <span class="skill-num">85%</span>
+          <span class="skill-name">Product Thinking</span>
+          <span class="skill-level">Strategic</span>
+        </div>
+        <div class="skill-meter">
+          <div class="skill-bar-wrap"><div class="skill-bar" data-width="85"></div></div>
+          <span class="skill-bar-value">85</span>
+        </div>
+        <div class="skill-desc">Made judgment calls where the web experience could not simply be shrunk, defining better mobile behaviors, prioritization, and feature tradeoffs.</div>
+      </div>
+      <div class="skill-row">
+        <div class="skill-summary">
+          <span class="skill-num">90%</span>
+          <span class="skill-name">Component Design</span>
+          <span class="skill-level">System-Driven</span>
+        </div>
+        <div class="skill-meter">
+          <div class="skill-bar-wrap"><div class="skill-bar" data-width="90"></div></div>
+          <span class="skill-bar-value">90</span>
+        </div>
+        <div class="skill-desc">Built reusable mobile patterns for cards, forms, tabs, sheets, and status elements so the experience stayed consistent across many modules.</div>
+      </div>
+      <div class="skill-row">
+        <div class="skill-summary">
+          <span class="skill-num">75%</span>
+          <span class="skill-name">Interaction Design</span>
+          <span class="skill-level">Practical</span>
+        </div>
+        <div class="skill-meter">
+          <div class="skill-bar-wrap"><div class="skill-bar" data-width="75"></div></div>
+          <span class="skill-bar-value">75</span>
+        </div>
+        <div class="skill-desc">Translated desktop-heavy interactions into mobile-friendly gestures, page flows, bottom sheets, and compact state transitions that still felt usable.</div>
+      </div>
+      <div class="skill-row">
+        <div class="skill-summary">
+          <span class="skill-num">88%</span>
+          <span class="skill-name">Figma Prototyping</span>
+          <span class="skill-level">Delivery Ready</span>
+        </div>
+        <div class="skill-meter">
+          <div class="skill-bar-wrap"><div class="skill-bar" data-width="88"></div></div>
+          <span class="skill-bar-value">88</span>
+        </div>
+        <div class="skill-desc">Delivered organized, developer-ready Figma files with reusable components and prototype flows to communicate behavior clearly during reviews and handoff.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TASK MANAGEMENT -->
+<section id="task">
+  <div class="inner">
+    <div class="section-label reveal">04 — Task Management</div>
+    <h2 class="task-title reveal reveal-delay-1">The Most-Used Module.<br><em>Modal To Native Screens.</em></h2>
+
+    <div class="comparison-wrap reveal reveal-delay-2">
+      <div class="compare-card">
+        <div class="compare-label web"><span class="dot"></span>Web — Table-Based Modal</div>
+        <div class="compare-screen web-shot">
+          <img src="task-web-primary.png" alt="Groworkz task management web view">
+        </div>
+        <div class="compare-desc"><strong>Problem:</strong> 6-column sortable table in a floating modal — completely unusable on a 390px touchscreen.</div>
+      </div>
+      <div class="compare-card">
+        <div class="compare-label mobile"><span class="dot"></span>Mobile — Card List</div>
+        <div class="compare-screen mobile-shot">
+          <img src="task-mobile-primary.png" alt="Groworkz task management mobile view">
+        </div>
+        <div class="compare-desc"><strong>Solution:</strong> Card layout — status, due date, priority, assignee visible without tapping. Persistent nav replaces sidebar.</div>
+      </div>
+    </div>
+
+    <div class="parallax-phones reveal reveal-delay-3" id="taskPhones">
+      <div class="para-phone">
+        <img src="task-view.png" alt="View Task">
+        <div class="para-phone-label">View Task</div>
+      </div>
+      <div class="para-phone">
+        <img src="task-create.png" alt="Create Task">
+        <div class="para-phone-label">Create Task</div>
+      </div>
+      <div class="para-phone">
+        <img src="task-timer.png" alt="Timer Log">
+        <div class="para-phone-label">Timer Log</div>
+      </div>
+      <div class="para-phone">
+        <img src="task-client.png" alt="Client Details">
+        <div class="para-phone-label">Client Details</div>
+      </div>
+      <div class="para-phone">
+        <img src="task-stream.png" alt="Stream">
+        <div class="para-phone-label">Stream</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROCESS -->
+<section id="process">
+  <div class="inner">
+    <div class="section-label reveal">05 — Design Process</div>
+    <h2 class="process-headline reveal reveal-delay-1">How I Approached This Translation.</h2>
+    <p class="process-body reveal reveal-delay-2">With 14+ modules and 100+ screens to design, a structured process was essential to stay consistent and move fast without losing quality.</p>
+
+    <div class="process-steps reveal reveal-delay-3">
+      <div class="process-step">
+        <div class="step-num">01</div>
+        <div class="step-title">Audit Web Platform</div>
+        <div class="step-desc">Mapped every module, screen state, form field, and interaction. Identified patterns and problem areas for mobile.</div>
+      </div>
+      <div class="process-step">
+        <div class="step-num">02</div>
+        <div class="step-title">Redesign Navigation</div>
+        <div class="step-desc">Collapsed side nav into a persistent bottom tab bar with contextual drawer access for secondary modules.</div>
+      </div>
+      <div class="process-step">
+        <div class="step-num">03</div>
+        <div class="step-title">Build Component System</div>
+        <div class="step-desc">List cards, info cards, bottom sheet filters, tab bars, form controls, and status badges — all reusable.</div>
+      </div>
+      <div class="process-step">
+        <div class="step-num">04</div>
+        <div class="step-title">Design Module by Module</div>
+        <div class="step-desc">Each module designed with a complete set of screens — list, detail, create, edit, empty states, and filters.</div>
+      </div>
+      <div class="process-step">
+        <div class="step-num">05</div>
+        <div class="step-title">Stakeholder Review</div>
+        <div class="step-desc">Reviewed designs with stakeholders, adjusted flows for real-world use cases identified during feedback rounds.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MODULES -->
+<section id="modules">
+  <div class="inner">
+    <div class="section-label reveal">06 — Modules Designed</div>
+    <h2 class="modules-headline reveal reveal-delay-1">14 Modules. Every Screen. Every State.</h2>
+    <p class="reveal reveal-delay-2" style="font-size:16px;color:var(--ink-60);margin-top:16px;max-width:600px;line-height:1.7;">Each module was designed with a complete set of screens: list view, detail/info view, create form, edit form, empty states, filters, and confirmation dialogs.</p>
+
+    <div class="module-list reveal reveal-delay-3">
+      <div class="module-row">
+        <div class="mod-num">01</div>
+        <div><div class="mod-name">Task Management</div><div class="mod-screens">List · Create · Edit · Timer · Stream</div></div>
+        <div class="mod-desc">Converted web modal into a full-screen detail view with native tabs. Persistent Task Timer at the bottom mirrors the web always-visible timer.</div>
+        <span class="mod-badge badge-core">Core</span>
+      </div>
+      <div class="module-row">
+        <div class="mod-num">02</div>
+        <div><div class="mod-name">Meeting Management</div><div class="mod-screens">List · View · Create · Edit · Stream</div></div>
+        <div class="mod-desc">Designed 4 distinct edit states (Planned, Held, Not Held, Not Held with reason) with adaptive form fields.</div>
+        <span class="mod-badge badge-adapted">Adapted</span>
+      </div>
+      <div class="module-row">
+        <div class="mod-num">03</div>
+        <div><div class="mod-name">Calls</div><div class="mod-screens">List · View · Add Call · Edit (4 states) · Stream</div></div>
+        <div class="mod-desc">Call status states mapped into a single edit form with conditional field visibility. Client map view embedded.</div>
+        <span class="mod-badge badge-adapted">Adapted</span>
+      </div>
+      <div class="module-row">
+        <div class="mod-num">04</div>
+        <div><div class="mod-name">Tickets &amp; Feedback</div><div class="mod-screens">List · View · Create · Edit · Feedback · Stream</div></div>
+        <div class="mod-desc">Added a Feedback tab with 5-star rating system per quality dimension — a feature enhancement over the web version.</div>
+        <span class="mod-badge badge-new">New Feature</span>
+      </div>
+      <div class="module-row">
+        <div class="mod-num">05</div>
+        <div><div class="mod-name">Leads &amp; CRM</div><div class="mod-screens">List · Add Lead · Info · Activity · History</div></div>
+        <div class="mod-desc">Split the web's single-modal lead form into a 2-step mobile flow. Activity History tab shows chronological timeline of interactions.</div>
+        <span class="mod-badge badge-adapted">Adapted</span>
+      </div>
+      <div class="module-row">
+        <div class="mod-num">06</div>
+        <div><div class="mod-name">Projects</div><div class="mod-screens">List · Add · Info · Stream · Roadmap · Task</div></div>
+        <div class="mod-desc">Project info uses a horizontal scrollable tab bar to expose 6 sub-views — matching the web's multi-tab modal while fitting the mobile viewport.</div>
+        <span class="mod-badge badge-adapted">Adapted</span>
+      </div>
+      <div class="module-row">
+        <div class="mod-num">07</div>
+        <div><div class="mod-name">Calendar</div><div class="mod-screens">Day · Week · Month · Event cards</div></div>
+        <div class="mod-desc">Three calendar views switchable via a compact toggle. Color-coded event cards per module type (tasks, meetings, calls).</div>
+        <span class="mod-badge badge-adapted">Adapted</span>
+      </div>
+      <div class="module-row">
+        <div class="mod-num">08</div>
+        <div><div class="mod-name">Mail</div><div class="mod-screens">Inbox · Compose · Read · Filter</div></div>
+        <div class="mod-desc">Compact mail list with sender avatar, subject, and preview snippet. Rich compose view with CC/BCC/Reply All.</div>
+        <span class="mod-badge badge-adapted">Adapted</span>
+      </div>
+      <div class="module-row">
+        <div class="mod-num">09</div>
+        <div><div class="mod-name">Chat</div><div class="mod-screens">All · Personal · Groups · Voice messages</div></div>
+        <div class="mod-desc">Introduced voice message support with waveform playback UI — a mobile-native enhancement not present on web.</div>
+        <span class="mod-badge badge-enhanced">Enhanced</span>
+      </div>
+      <div class="module-row">
+        <div class="mod-num">10</div>
+        <div><div class="mod-name">HR — Leaves &amp; Permissions</div><div class="mod-screens">List · View · Create · Approval Flow</div></div>
+        <div class="mod-desc">Multi-step approval flow converted from web's vertical timeline to a mobile-readable card-based step flow.</div>
+        <span class="mod-badge badge-adapted">Adapted</span>
+      </div>
+      <div class="module-row">
+        <div class="mod-num">11</div>
+        <div><div class="mod-name">HR — Attendance</div><div class="mod-screens">Today · This Week · This Month · Check-in log</div></div>
+        <div class="mod-desc">The web's 31-column attendance table redesigned as three progressive views: today list, weekly strip chart, and monthly calendar grid.</div>
+        <span class="mod-badge badge-adapted">Adapted</span>
+      </div>
+      <div class="module-row">
+        <div class="mod-num">12</div>
+        <div><div class="mod-name">Product &amp; Material Requests</div><div class="mod-screens">Product list · Material request · Indent forms</div></div>
+        <div class="mod-desc">Inline table-based forms restructured into stacked card rows on mobile. "Add New +" row action preserved for multi-item requests.</div>
+        <span class="mod-badge badge-adapted">Adapted</span>
+      </div>
+      <div class="module-row">
+        <div class="mod-num">13</div>
+        <div><div class="mod-name">Announcements</div><div class="mod-screens">List · Create · Edit · Read view</div></div>
+        <div class="mod-desc">Company-wide announcements surfaced in a dedicated feed. Create/edit form with title, type, status, and description.</div>
+        <span class="mod-badge badge-new">New Screen</span>
+      </div>
+      <div class="module-row">
+        <div class="mod-num">14</div>
+        <div><div class="mod-name">Help Center</div><div class="mod-screens">Support options · Add Contact · Dial pad</div></div>
+        <div class="mod-desc">Designed a dedicated Help Center with multiple contact channels: chat, video call, and a native dial pad UI.</div>
+        <span class="mod-badge badge-new">New Feature</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- KEY DECISIONS -->
+<section id="decisions">
+  <div class="inner">
+    <div class="section-label reveal">07 — Key Design Decisions</div>
+    <h2 class="decisions-headline reveal reveal-delay-1">The Choices That Shaped The Experience.</h2>
+
+    <div class="decisions-grid reveal reveal-delay-2">
+      <div class="decision-card">
+        <h3>Bottom Nav Over Sidebar</h3>
+        <p>The web's collapsible sidebar with 20+ nested items couldn't work on mobile. Replaced it with a 5-item persistent bottom tab bar with an in-section navigation pattern — keeping primary modules always one tap away.</p>
+      </div>
+      <div class="decision-card">
+        <h3>Modals → Full Screens</h3>
+        <p>Every web form was inside a modal dialog. On mobile, these became full-screen pages with a back arrow header. This follows iOS/Android patterns, supports the soft keyboard better, and allows scrolling through long forms without viewport constraints of a floating overlay.</p>
+      </div>
+      <div class="decision-card">
+        <h3>Bottom Sheets For Filters</h3>
+        <p>Filter controls on web used inline dropdowns and sidebars. On mobile, all filtering is done through bottom sheets — half-screen drawers that appear on demand. This keeps the list view uncluttered and gives users enough space for multi-select filter combinations.</p>
+      </div>
+      <div class="decision-card">
+        <h3>Attendance Grid Redesign</h3>
+        <p>The web's dense 31-column attendance matrix (showing all 35 employees across an entire month) was completely rethought for mobile. Three progressive views — Today list, This Week strip, This Month compact grid — each serve different user needs without data loss.</p>
+      </div>
+      <div class="decision-card">
+        <h3>In-App Notifications</h3>
+        <p>The web's notification bell dropdown was translated to a push-notification-style list screen with Unread/Read segmentation. Each notification links directly to the relevant task or record, supporting the "deep link" behavior mobile users expect.</p>
+      </div>
+      <div class="decision-card">
+        <h3>Persistent Task Timer</h3>
+        <p>The task timer, pinned in the modal footer on web, became a persistent timer bar at the screen bottom — always visible across screens during an active time log. Mirrors the always-visible web timer while respecting mobile navigation space.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WEB VS MOBILE COMPARISON -->
+<section id="comparison">
+  <div class="inner">
+    <div class="section-label reveal">08 — Web vs Mobile Comparison</div>
+    <h2 class="comparison-headline reveal reveal-delay-1">What Changed, and <em>Why</em></h2>
+
+    <div class="comp-table reveal reveal-delay-2">
+      <table>
+        <thead>
+          <tr>
+            <th>Feature</th>
+            <th>Web Platform</th>
+            <th class="highlight">Mobile Solution</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Navigation</td><td>Collapsible Left Sidebar With 20+ Nested Items</td><td>5-Item Bottom Tab Bar + In-Section Navigation</td></tr>
+          <tr><td>Forms</td><td>Modal Dialogs Overlaid On Background</td><td>Full-Screen Pages With Back Navigation</td></tr>
+          <tr><td>Filters</td><td>Inline Dropdown Menus &amp; Filter Bars</td><td>Bottom Sheet Drawers With Multi-Select</td></tr>
+          <tr><td>Data Tables</td><td>Paginated Tables With Sortable Columns</td><td>Scrollable List Cards With Key Metadata Visible</td></tr>
+          <tr><td>Attendance</td><td>31-Column Grid For All Employees/Month</td><td>Today / Week / Month Progressive Views</td></tr>
+          <tr><td>Approval Flow</td><td>Vertical Step Timeline In Modal</td><td>Card-Based Step Flow With Avatars &amp; Timestamps</td></tr>
+          <tr><td>Chat</td><td>Web Messaging Panel</td><td>Native Chat UI + Voice Message Support</td></tr>
+          <tr><td>Task Timer</td><td>Timer Pinned In Task Modal Footer</td><td>Persistent Timer Bar At Screen Bottom</td></tr>
+          <tr><td>Multi-Item Forms</td><td>Inline Table Rows (Name/Model/Brand/Unit)</td><td>Stacked Form Cards With + Add Row Action</td></tr>
+          <tr><td>Feedback</td><td>Not Available In Web Tasks/Tickets</td><td>Star Rating Feedback Added To Ticket Module</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- POST-CALL FEATURE -->
+<section id="postcall">
+  <div class="inner">
+    <div class="section-label reveal">09 — Mobile-Exclusive Feature</div>
+    <div class="postcall-header">
+      <div>
+        <h2 class="postcall-title reveal reveal-delay-1">Post-Call CRM Popup<em>The Feature That Doesn't Exist On Web</em></h2>
+      </div>
+      <p class="postcall-desc reveal reveal-delay-2">Inspired by TrueCaller's caller-ID overlay — this feature triggers a Groworkz popup immediately after a call ends, whether missed, received, or dialed. The user can instantly categorise the caller as a New Lead, Opportunity, Contact, or link the call to an existing Ticket or Project, all in one tap, without opening the app.</p>
+    </div>
+
+    <div class="postcall-flow reveal reveal-delay-3">
+      <div class="flow-step">
+        <div class="flow-title">Call Ends</div>
+        <div class="flow-body">Missed, Incoming, or outgoing any call triggers the hook instantly.</div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-title">Popup Appears</div>
+        <div class="flow-body">Groworkz overlay shows the number + caller name if already in CRM.</div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-title">Tap to Categorise</div>
+        <div class="flow-body">New Lead · Opportunity · Ticket · Project — instant CRM Entry.</div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-title">Saved to CRM</div>
+        <div class="flow-body">Record created or linked. No app switching, no form filling required.</div>
+      </div>
+    </div>
+
+    <div class="postcall-gallery reveal reveal-delay-4">
+      <div class="postcall-phone">
+        <img src="postcall-default.png" alt="Default post-call popup">
+        <div class="postcall-caption">Default Popup</div>
+      </div>
+      <div class="postcall-phone">
+        <img src="postcall-contact.png" alt="Contact identified popup">
+        <div class="postcall-caption">Contact Identified</div>
+      </div>
+      <div class="postcall-phone">
+        <img src="postcall-both-options.png" alt="Both options visible popup">
+        <div class="postcall-caption">Both Options Visible</div>
+      </div>
+      <div class="postcall-phone">
+        <img src="postcall-new-lead.png" alt="New lead selected popup">
+        <div class="postcall-caption">New Lead Selected</div>
+      </div>
+      <div class="postcall-phone">
+        <img src="postcall-opportunity.png" alt="Opportunity selected popup">
+        <div class="postcall-caption">Opportunity Selected</div>
+      </div>
+      <div class="postcall-phone">
+        <img src="postcall-project-rows.png" alt="Project rows popup">
+        <div class="postcall-caption">Project Rows</div>
+      </div>
+      <div class="postcall-phone">
+        <img src="postcall-saved-contact.png" alt="Saved contact and CRM tag popup">
+        <div class="postcall-caption">Saved Contact + CRM Tag</div>
+      </div>
+    </div>
+
+    <div class="categories-grid reveal reveal-delay-5">
+      <div class="cat-block">
+        <h4>Save Categories</h4>
+        <p class="cat-lead">Choose the right destination instantly based on the context of the call.</p>
+        <div class="cat-item">
+          <div class="cat-copy"><div class="cat-item-name">New Lead</div><div class="cat-item-desc">Potential customer or fresh inquiry</div></div>
+        </div>
+        <div class="cat-item">
+          <div class="cat-copy"><div class="cat-item-name">Opportunity</div><div class="cat-item-desc">Same client, new discussion or follow-up</div></div>
+        </div>
+        <div class="cat-item">
+          <div class="cat-copy"><div class="cat-item-name">Ticket</div><div class="cat-item-desc">Support issue or complaint to track</div></div>
+        </div>
+        <div class="cat-item">
+          <div class="cat-copy"><div class="cat-item-name">Project</div><div class="cat-item-desc">Link the call to an active project</div></div>
+        </div>
+      </div>
+      <div class="cat-block">
+        <h4>Quick Actions In Popup</h4>
+        <p class="cat-lead">The popup supports action-first follow-up without forcing users into a long flow.</p>
+        <div class="cat-item">
+          <div class="cat-copy"><div class="cat-item-name">Add Contact</div><div class="cat-item-desc">Save to phone contacts instantly</div></div>
+        </div>
+        <div class="cat-item">
+          <div class="cat-copy"><div class="cat-item-name">Message</div><div class="cat-item-desc">Send a text follow-up immediately</div></div>
+        </div>
+        <div class="cat-item">
+          <div class="cat-copy"><div class="cat-item-name">Call Back</div><div class="cat-item-desc">Redial in one tap from the popup</div></div>
+        </div>
+        <div class="cat-item">
+          <div class="cat-copy"><div class="cat-item-name">Smart Recognition</div><div class="cat-item-desc">If number is in CRM, name + category auto-suggest</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- OUTCOMES -->
+<section id="outcomes">
+  <div class="inner">
+    <div class="section-label reveal">10 — Outcomes &amp; Deliverables</div>
+    <h2 class="outcomes-headline reveal reveal-delay-1">What Was Delivered.</h2>
+    <p class="outcomes-body reveal reveal-delay-2">The project resulted in a complete, developer-ready mobile design system for the Groworkz platform — covering all major modules with consistent components, interactions, and documented states.</p>
+
+    <div class="outcomes-stats reveal reveal-delay-3">
+      <div class="outcome-stat">
+        <div class="o-val">14+</div>
+        <div class="o-label">Modules fully designed end-to-end</div>
+      </div>
+      <div class="outcome-stat">
+        <div class="o-val">200+</div>
+        <div class="o-label">Unique mobile screens delivered</div>
+      </div>
+      <div class="outcome-stat">
+        <div class="o-val">1</div>
+        <div class="o-label">Unified design system with reusable components</div>
+      </div>
+      <div class="outcome-stat">
+        <div class="o-val">3</div>
+        <div class="o-label">Net-new features added for mobile</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- LEARNINGS -->
+<section id="learnings">
+  <div class="inner">
+    <div class="section-label reveal">11 — Learnings &amp; Reflections</div>
+    <h2 class="learnings-headline reveal reveal-delay-1">What This Project Taught Me.</h2>
+
+    <div class="learnings-grid reveal reveal-delay-2">
+      <div class="learning-card">
+        <div class="l-num">01</div>
+        <div class="l-title">Adaptation ≠ Shrinking</div>
+        <div class="l-body">Designing for mobile isn't about making the web version smaller. It requires rethinking interaction paradigms entirely — what works as a hover action on desktop needs to become a swipe, tap, or bottom sheet on mobile.</div>
+      </div>
+      <div class="learning-card">
+        <div class="l-num">02</div>
+        <div class="l-title">Component systems pay dividends</div>
+        <div class="l-body">Investing early in a consistent component library — especially info cards, bottom sheets, and form controls — meant I could design later modules much faster and maintain visual consistency across 100+ screens.</div>
+      </div>
+      <div class="learning-card">
+        <div class="l-num">03</div>
+        <div class="l-title">Complexity can be progressive</div>
+        <div class="l-body">The attendance redesign showed that progressive disclosure works for complex data too. Showing the right amount of information at each zoom level (today → week → month) respects both the user's attention and the screen's limitations.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-left">
+    <div class="footer-title">End Of<br>Case Study. <span>→</span></div>
+    <p class="footer-sub">A mobile-first rethinking of a complex enterprise workflow system, focused on clarity, usability, and scalable design decisions.</p>
+    <p class="footer-meta">Groworkz Mobile App Case Study · 2026</p>
+    <p class="footer-note">Selected screens are shown here for presentation. Additional flows, records, and product visuals are intentionally not displayed due to privacy and confidentiality considerations.</p>
+  </div>
+  <div style="text-align:right;">
+    <div style="font-size:12px;color:rgba(255,255,255,0.58);letter-spacing:1px;text-transform:uppercase;margin-bottom:16px;">Summary</div>
+    <div style="font-size:16px;font-weight:600;color:white;">Enterprise SaaS To Mobile Experience</div>
+    <div style="font-size:13px;color:rgba(255,255,255,0.72);margin-top:4px;">Selected Design Outcomes</div>
+    <div style="margin-top:32px;font-size:12px;color:rgba(255,255,255,0.58);">200+ Screens · 14 Modules · 2 Months</div>
+  </div>
+</footer>
+
+<script>
+  // ─── CURSOR
+  const dot = document.getElementById('cursor-dot');
+  const ring = document.getElementById('cursor-ring');
+  let mouseX = 0, mouseY = 0, ringX = 0, ringY = 0;
+
+  document.addEventListener('mousemove', e => {
+    mouseX = e.clientX; mouseY = e.clientY;
+    dot.style.left = mouseX + 'px';
+    dot.style.top = mouseY + 'px';
+  });
+
+  function animateRing() {
+    ringX += (mouseX - ringX) * 0.12;
+    ringY += (mouseY - ringY) * 0.12;
+    ring.style.left = ringX + 'px';
+    ring.style.top = ringY + 'px';
+    requestAnimationFrame(animateRing);
+  }
+  animateRing();
+
+  const clearCursorModes = () => {
+    document.body.classList.remove('cursor-hover', 'cursor-view', 'cursor-tap', 'cursor-drag');
+  };
+
+  const registerCursorMode = (selector, mode) => {
+    document.querySelectorAll(selector).forEach(el => {
+      el.addEventListener('mouseenter', () => {
+        clearCursorModes();
+        document.body.classList.add('cursor-hover', mode);
+      });
+      el.addEventListener('mouseleave', clearCursorModes);
+    });
+  };
+
+  registerCursorMode('button, .hero-tag, .chip, .back-to-top, .cat-item', 'cursor-tap');
+  registerCursorMode('.module-row, .decision-card, .learning-card, .process-step, .flow-step, .stat-card, .outcome-stat, .compare-card, .para-phone, .postcall-phone, .cat-block', 'cursor-view');
+  registerCursorMode('.parallax-phones, .postcall-gallery, .hscroll-track', 'cursor-drag');
+  registerCursorMode('a:not(nav a)', 'cursor-view');
+
+  // ─── PROGRESS BAR
+  const progressBar = document.getElementById('progress-bar');
+  const backToTop = document.getElementById('backToTop');
+  window.addEventListener('scroll', () => {
+    const scrolled = window.scrollY / (document.body.scrollHeight - window.innerHeight);
+    progressBar.style.width = (scrolled * 100) + '%';
+    if (backToTop) {
+      backToTop.classList.toggle('visible', window.scrollY > 500);
+    }
+  });
+
+  if (backToTop) {
+    backToTop.addEventListener('click', () => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  }
+
+  // ─── NAV SCROLLED
+  const nav = document.getElementById('main-nav');
+  const navGoBack = document.getElementById('navGoBack');
+  window.addEventListener('scroll', () => {
+    nav.classList.toggle('scrolled', window.scrollY > 40);
+  });
+  if (navGoBack) {
+    navGoBack.addEventListener('click', e => {
+      e.preventDefault();
+      if (window.history.length > 1) {
+        window.history.back();
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    });
+  }
+  nav.addEventListener('mouseenter', () => {
+    document.body.classList.add('nav-native-cursor');
+    document.body.classList.remove('cursor-hover');
+  });
+  nav.addEventListener('mouseleave', () => {
+    document.body.classList.remove('nav-native-cursor');
+  });
+
+  // ─── ACTIVE NAV LINKS
+  const sections = document.querySelectorAll('section[id]');
+  const navLinks = document.querySelectorAll('.nav-links a[data-section]');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        navLinks.forEach(a => {
+          a.classList.toggle('active', a.dataset.section === entry.target.id);
+        });
+      }
+    });
+  }, { rootMargin: '-40% 0px -40% 0px' });
+  sections.forEach(s => observer.observe(s));
+
+  // ─── REVEAL ON SCROLL
+  const revealObserver = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        // Animate skill bars
+        entry.target.querySelectorAll('.skill-bar').forEach(bar => {
+          const w = bar.dataset.width;
+          setTimeout(() => {
+            bar.style.width = w + '%';
+            bar.classList.add('animate');
+          }, 100);
+        });
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+
+  // Also trigger skill bars when their section is visible
+  const skillBars = document.querySelectorAll('.skill-bar');
+  const skillObserver = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const bar = entry.target;
+        const w = bar.dataset.width;
+        setTimeout(() => { bar.style.width = w + '%'; }, 200);
+      }
+    });
+  }, { threshold: 0.5 });
+  skillBars.forEach(b => skillObserver.observe(b));
+
+  // ─── OVERVIEW PATTERN HOVER
+  const overviewSection = document.getElementById('overview');
+  const overviewCards = document.querySelectorAll('.stat-card[data-overview-pattern]');
+  if (overviewSection && overviewCards.length) {
+    const clearOverviewPattern = () => {
+      overviewSection.classList.remove('pattern-modules', 'pattern-screens', 'pattern-system', 'pattern-features');
+    };
+
+    overviewCards.forEach(card => {
+      const pattern = card.dataset.overviewPattern;
+      card.addEventListener('mouseenter', () => {
+        clearOverviewPattern();
+        overviewSection.classList.add(`pattern-${pattern}`);
+      });
+      card.addEventListener('mouseleave', clearOverviewPattern);
+    });
+  }
+
+  // ─── DRAGGABLE HSCROLL
+  const track = document.getElementById('taskPhones');
+  if (track) {
+    let isDown = false, startX, scrollLeft;
+    track.addEventListener('mousedown', e => {
+      isDown = true; track.style.cursor = 'grabbing';
+      startX = e.pageX - track.offsetLeft;
+      scrollLeft = track.scrollLeft;
+    });
+    track.addEventListener('mouseleave', () => { isDown = false; track.style.cursor = 'grab'; });
+    track.addEventListener('mouseup', () => { isDown = false; track.style.cursor = 'grab'; });
+    track.addEventListener('mousemove', e => {
+      if (!isDown) return;
+      e.preventDefault();
+      const x = e.pageX - track.offsetLeft;
+      const walk = (x - startX) * 1.5;
+      track.scrollLeft = scrollLeft - walk;
+    });
+  }
+
+  // ─── HERO REVEAL
+  document.querySelectorAll('#hero .reveal').forEach((el, i) => {
+    setTimeout(() => el.classList.add('visible'), 200 + i * 150);
+  });
+
+  // ─── PARALLAX on hero phones
+  window.addEventListener('scroll', () => {
+    const scrollY = window.scrollY;
+    const front = document.querySelector('.phone-front');
+    const back = document.querySelector('.phone-back');
+    if (front && back && scrollY < window.innerHeight) {
+      front.style.transform = `translateY(${-18 - scrollY * 0.08}px)`;
+      back.style.transform = `translateX(46px) rotate(9deg) scale(0.92) translateY(${scrollY * 0.04}px)`;
+    }
+  });
+</script>
+</body>
+</html>
+
+
 
