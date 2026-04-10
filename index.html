@@ -1049,28 +1049,36 @@
       padding: 10px 0 0;
       text-align: center;
       position: relative;
-      overflow: hidden;     /* flags stay contained within stage bounds */
+      overflow: hidden;
     }
 
+    /* =============================================
+       FIX 1: Flag images — contain fully, no crop
+    ============================================= */
     .toolkit-scroll {
       position: absolute;
       top: -40px;
       width: clamp(90px, 16vw, 240px);
       height: auto;
       object-fit: contain;
+      object-position: top center;
       pointer-events: none;
       transform-origin: top center;
       animation: flagWind 4s ease-in-out infinite alternate;
       z-index: 0;
       filter: drop-shadow(0 16px 32px rgba(23, 21, 17, 0.18));
+      /* Prevent cropping by ensuring full image is visible */
+      max-height: 320px;
     }
 
     .toolkit-scroll.left {
-      left: -80px;
+      left: 0;
+      transform-origin: top left;
     }
 
     .toolkit-scroll.right {
-      right: -80px;
+      right: 0;
+      transform-origin: top right;
       animation-delay: -2s;
     }
 
@@ -1229,12 +1237,17 @@
       max-width: 28rem
     }
 
+    /* =============================================
+       FIX 2: Footer text readable over image
+    ============================================= */
     .footer-text {
       margin: 20px 0 0;
       max-width: 33rem;
       font-size: 1.25rem;
       line-height: 1.7;
-      color: var(--soft)
+      color: var(--soft);
+      position: relative;
+      z-index: 2;
     }
 
     .footer-email {
@@ -1557,8 +1570,6 @@
       background: rgba(23, 21, 17, .1)
     }
 
-
-
     .about-me-text {
       font-size: 1.25rem;
       line-height: 1.8;
@@ -1637,6 +1648,9 @@
       color: rgba(245, 243, 239, 0.45);
     }
 
+    /* =============================================
+       FIX 5 (desktop): Auto gap in stats box
+    ============================================= */
     .stats-tools-grid {
       display: grid;
       grid-template-columns: auto 1fr;
@@ -1647,13 +1661,13 @@
 
     .stats-box {
       display: flex;
-      gap: 0;          /* gap handled by dividers + stat padding */
       align-items: center;
+      gap: 0;
     }
 
     .stat {
       text-align: center;
-      padding: 0 32px;  /* symmetric breathing room on each side */
+      padding: 0 clamp(16px, 3vw, 32px);
     }
 
     .stat:first-child {
@@ -1679,6 +1693,7 @@
       width: 1px;
       height: 60px;
       background: rgba(23, 21, 17, .12);
+      flex-shrink: 0;
     }
 
     body.theme-dark .stat-divider {
@@ -2251,8 +2266,6 @@
         width: 7rem
       }
 
-
-
       .hero-name {
         font-size: clamp(4.4rem, 16vw, 6.1rem)
       }
@@ -2725,9 +2738,12 @@
 
     /* =============================================
        WORK SECTION (≤480px)
+       FIX 4: Chips in top-right on 3rd card (wip)
+       FIX 6: Bottom padding on work section
     ============================================= */
     @media (max-width: 480px) {
-      .work { padding: 48px 0 56px; }
+      /* FIX 6: Add bottom padding to work section */
+      .work { padding-bottom: 80px; }
 
       /* Card layout: full-width column with inner padding */
       .work-row {
@@ -2754,18 +2770,39 @@
       .work-number strong { font-size: 1.1rem; line-height: 1; }
       .work-number span { font-size: .7rem; letter-spacing: .18em; }
 
+      /* FIX 4: wip card — tags pinned to top-right */
+      .work-row.state-wip .work-main {
+        position: relative;
+      }
+      .work-row.state-wip .work-tags {
+        position: absolute;
+        top: 14px;
+        right: 16px;
+        margin-bottom: 0;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 4px;
+        max-width: 48%;
+      }
+      /* Make chips smaller on mobile for the wip card */
+      .work-row.state-wip .work-tag {
+        font-size: .58rem;
+        padding: 2px 6px;
+        letter-spacing: .1em;
+      }
+
       /* Main content area with padding */
       .work-main {
         padding: 14px 16px 0;
       }
 
-      /* Title row: project name left, chips right */
+      /* Title */
       .work-project {
         font-size: 1.4rem;
         margin-bottom: 8px;
       }
 
-      /* Chips (tags) sit on same visual row as title via flex trick */
+      /* Chips (non-wip cards) */
       .work-tags {
         display: flex;
         flex-wrap: wrap;
@@ -2788,33 +2825,70 @@
       .work-cta-btn { font-size: .75rem; padding: 8px 14px; }
 
       .mini-folder { margin-top: 36px; padding: 16px; }
+
+      /* =============================================
+         FIX 4 (posters): Vertical scroll on mobile
+      ============================================= */
+      .mini-wrapper {
+        /* Override JS-controlled max-height to allow scrolling */
+      }
+      .mini-folder.is-open .mini-wrapper {
+        max-height: 420px; /* fixed viewport-friendly height */
+        overflow-y: auto;
+        overflow-x: hidden;
+        -webkit-overflow-scrolling: touch;
+        /* Custom subtle scrollbar */
+        scrollbar-width: thin;
+        scrollbar-color: rgba(143,61,52,.4) transparent;
+      }
+      .mini-folder.is-open .mini-wrapper::-webkit-scrollbar {
+        width: 3px;
+      }
+      .mini-folder.is-open .mini-wrapper::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      .mini-folder.is-open .mini-wrapper::-webkit-scrollbar-thumb {
+        background: rgba(143,61,52,.4);
+        border-radius: 99px;
+      }
+      /* Stack grid vertically on mobile */
       .mini-grid {
-        flex-wrap: wrap;
+        flex-direction: column;
+        flex-wrap: nowrap;
         width: 100%;
         gap: 16px;
-        padding-bottom: 16px;
+        padding: 8px 0 20px;
       }
-      .mini-card { width: calc(50% - 8px); flex-shrink: 1; }
+      .mini-card {
+        width: 100%;
+        flex-shrink: 0;
+      }
     }
 
     /* =============================================
        TOOLKIT SECTION (≤480px)
+       FIX 1: Flags fully visible, no crop
     ============================================= */
     @media (max-width: 480px) {
       .toolkit { padding: 40px 0 56px; }
+      .toolkit-stage {
+        overflow: visible; /* allow flags to breathe vertically */
+        padding-top: 48px; /* push content down so flags don't overlap */
+      }
       .toolkit-figure { min-height: 280px; }
       .toolkit-image { width: 100%; }
 
-      /* Flags stay inside screen with safe padding */
+      /* Flags: constrained size, anchored to top edges */
       .toolkit-scroll {
-        width: clamp(50px, 10vw, 80px);
-        top: -28px;
+        width: clamp(44px, 9vw, 72px);
+        top: 0;
+        max-height: none;
       }
       .toolkit-scroll.left {
-        left: 8px;   /* safe inset from screen edge */
+        left: 0;
       }
       .toolkit-scroll.right {
-        right: 8px;  /* safe inset from screen edge */
+        right: 0;
       }
 
       .toolkit-tools {
@@ -2839,26 +2913,73 @@
 
     /* =============================================
        FOOTER (≤480px)
+       FIX 2: Text readable over image
     ============================================= */
     @media (max-width: 480px) {
-      .footer-chapter { padding: 56px 0; }
+      .footer-chapter { padding: 56px 0 0; }
+
+      /* Reflow: stack text on top, image below */
+      .footer-stage {
+        min-height: unset;
+        display: flex;
+        flex-direction: column;
+      }
+      .footer-copy {
+        max-width: 100%;
+        padding-bottom: 32px;
+        /* Frosted card so text is always readable */
+        background: rgba(245,243,239,.82);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border-radius: 16px;
+        padding: 28px 20px 24px;
+      }
+      body.theme-dark .footer-copy {
+        background: rgba(18,18,18,.85);
+      }
+      /* Image placed after text, full-width, aspect-ratio preserved */
+      .footer-image {
+        position: relative;
+        right: auto;
+        bottom: auto;
+        width: 100%;
+        max-width: 100%;
+        margin-top: 0;
+        display: block;
+        border-radius: 0;
+      }
+
       .footer-title { font-size: clamp(2.6rem, 13vw, 3.5rem) !important; line-height: .95; }
       .footer-email {
-        font-size: 1.5rem !important;
-        flex-direction: column;
-        align-items: flex-start;
-        gap: .8rem;
+        font-size: 1.3rem !important;
+        padding: 16px 24px;
+        flex-direction: row;
+        align-items: center;
+        gap: .6rem;
+        width: 100%;
+        justify-content: center;
+        margin-top: 28px;
       }
       .footer-avail-bubble { font-size: .78rem; }
-      .footer-links { flex-direction: column; align-items: flex-start; gap: 10px; }
-      .footer-link { min-width: 0; width: auto; }
+      .footer-links {
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: flex-start;
+        gap: 8px;
+        margin-top: 20px;
+      }
+      .footer-link {
+        min-width: 0;
+        width: auto;
+        padding: .7rem .9rem;
+        font-size: .72rem;
+      }
       .footer-kanji { font-size: 5.5rem; right: -4px; }
-      .footer-stage { min-height: unset; }
-      .footer-image { max-width: 60%; }
     }
 
     /* =============================================
        ABOUT PAGE (≤480px)
+       FIX 5: Auto gap in stats count card
     ============================================= */
     @media (max-width: 480px) {
       .about-hero { padding: 100px 0 40px; }
@@ -2867,17 +2988,27 @@
       .values-grid { grid-template-columns: 1fr; gap: 16px; }
       .value-card { padding: 24px 20px; }
       .value-title { font-size: 1.6rem; }
-      .stats-tools-grid { grid-template-columns: 1fr; gap: 32px; }
+
+      /* FIX 5: Stats card auto-distributes gap evenly */
+      .stats-tools-grid {
+        grid-template-columns: 1fr;
+        gap: 32px;
+      }
       .stats-box {
-        justify-content: flex-start;
+        justify-content: space-between; /* auto gap */
         gap: 0;
         border: 1px solid rgba(23, 21, 17, .1);
         border-radius: 12px;
         padding: 20px 16px;
         background: rgba(255,255,255,.35);
+        width: 100%;
       }
-      .stat { padding: 0 20px; }
-      .stat:first-child { padding-left: 4px; }
+      .stat {
+        padding: 0;
+        flex: 1;
+        text-align: center;
+      }
+      .stat:first-child { padding-left: 0; }
       .stat-num { font-size: clamp(2.2rem, 9vw, 3rem); }
       .stat-divider { height: 48px; }
     }
@@ -3201,7 +3332,7 @@
       },
       toolkit: { chapter: "Ch. 02", title: "Toolkit", hintClosed: "Tap the chest to open", hintOpen: "Tap again to close", note: "My go-to tools, kept in one place.", tools: [{ name: "Figma", icon: "Images/All-Images/Figma.png" }, { name: "Framer", icon: "Images/All-Images/Framer.png" }, { name: "Lovable", icon: "Images/All-Images/lovable.png" }, { name: "Whimsical", icon: "Images/All-Images/whimsical.png" }, { name: "Hotjar", icon: "Images/All-Images/Hotjar.png" }, { name: "Google Analytics", icon: "Images/All-Images/google analytics.png" }, { name: "HTML", icon: "Images/All-Images/html.png" }, { name: "CSS", icon: "Images/All-Images/CSS.png" }] },
       about: { name: "Sanjai", roleline: "UI/UX Designer - Junior - Coimbatore, India", quote: "\"I design products that feel obvious in hindsight - the ones where users don't notice the design, because it just works.\"", availability: "Open to full-time roles", values: [["01", "Always be learning", "Every project is a chance to know something you didn't yesterday.", "I took on a project outside my comfort zone. It became my best work."], ["02", "Collaboration is the skill", "The best design decisions happen in conversation, not in isolation.", "My most-used tool isn't Figma. It's asking the right question."], ["03", "New industries, fresh eyes", "Not knowing an industry is an advantage you ask why things are the way they are.", "The best UX insight I ever had came from being the confused new person in the room."], ["04", "Ship it, then grow", "Waiting for perfect means waiting forever. Real feedback beats imagined polish.", "Every v1 is embarrassing. Ship it anyway."]], toolsLabel: "TOOLS I USE DAILY", tools: [{ name: "Figma", icon: "Images/All-Images/Figma.png" }, { name: "Framer", icon: "Images/All-Images/Framer.png" }, { name: "Lovable", icon: "Images/All-Images/lovable.png" }, { name: "Whimsical", icon: "Images/All-Images/whimsical.png" }, { name: "Hotjar", icon: "Images/All-Images/Hotjar.png" }, { name: "Google Analytics", icon: "Images/All-Images/google analytics.png" }, { name: "HTML", icon: "Images/All-Images/html.png" }, { name: "CSS", icon: "Images/All-Images/CSS.png" }] },
-      links: { kicker: "Everything, one place", title: "Reach Me", lead: "A product, a problem, or even just a rough idea <br><br>I’d love to hear it.<br>Let’s turn it into something people actually enjoy using.", resume: { eyebrow: "Latest version - Updated [Month Year]", title: "Sanjai - Resume", meta: "UI/UX Designer", cta: "Download", href: "https://drive.google.com/file/d/1LeBFoEm4L6humh6sqXoKBhY8aaBRHxCC/view?usp=sharing" }, groups: [{ label: "Professional", items: [{ icon: "linkedin", title: "LinkedIn", meta: "linkedin.com/in/sanjaidesigan - where the recruiters live", badge: "Active", badgeClass: "hot", href: "https://linkedin.com/in/sanjaidesigan", actionLabel: "Go to" }, { icon: "instagram", title: "Instagram", meta: "@sanju_desigan - visual updates and everyday work", badge: "Social", badgeClass: "", href: "https://instagram.com/sanju_desigan", actionLabel: "Go to" }] }, { label: "Design Work", items: [{ icon: "behance", title: "Behance", meta: "behance.net/rakultecikan - longer case studies", badge: "Portfolio", badgeClass: "", href: "https://behance.net/rakultecikan", actionLabel: "View" }] }, { label: "Say Hello", items: [{ icon: "mail", title: "Email me", meta: "sanjai.creative88@gmail.com - I reply within 24 hrs, usually faster", badge: "Best way", badgeClass: "hot", href: "mailto:sanjai.creative88@gmail.com", actionLabel: "Click here" }] }] },
+      links: { kicker: "Everything, one place", title: "Reach Me", lead: "A product, a problem, or even just a rough idea <br><br>I'd love to hear it.<br>Let's turn it into something people actually enjoy using.", resume: { eyebrow: "Latest version - Updated [Month Year]", title: "Sanjai - Resume", meta: "UI/UX Designer", cta: "Download", href: "https://drive.google.com/file/d/1LeBFoEm4L6humh6sqXoKBhY8aaBRHxCC/view?usp=sharing" }, groups: [{ label: "Professional", items: [{ icon: "linkedin", title: "LinkedIn", meta: "linkedin.com/in/sanjaidesigan - where the recruiters live", badge: "Active", badgeClass: "hot", href: "https://linkedin.com/in/sanjaidesigan", actionLabel: "Go to" }, { icon: "instagram", title: "Instagram", meta: "@sanju_desigan - visual updates and everyday work", badge: "Social", badgeClass: "", href: "https://instagram.com/sanju_desigan", actionLabel: "Go to" }] }, { label: "Design Work", items: [{ icon: "behance", title: "Behance", meta: "behance.net/rakultecikan - longer case studies", badge: "Portfolio", badgeClass: "", href: "https://behance.net/rakultecikan", actionLabel: "View" }] }, { label: "Say Hello", items: [{ icon: "mail", title: "Email me", meta: "sanjai.creative88@gmail.com - I reply within 24 hrs, usually faster", badge: "Best way", badgeClass: "hot", href: "mailto:sanjai.creative88@gmail.com", actionLabel: "Click here" }] }] },
       footer: { kicker: "End Chapter - Final Chapter", title: ["Let's build", "something", "worth using."], text: "If you made it here, we probably have similar taste. I'm currently looking for full-time UI/UX roles at product-focused teams.", email: ["sanjai.creative88@gmail.com", "mailto:sanjai.creative88@gmail.com"], kanji: "&#32080;", links: [["LinkedIn", "https://linkedin.com/in/sanjaidesigan"], ["Instagram", "https://instagram.com/sanju_desigan"], ["Resume", "https://drive.google.com/file/d/1LeBFoEm4L6humh6sqXoKBhY8aaBRHxCC/view?usp=sharing"]] }
     };
     const $ = id => document.getElementById(id);
@@ -3262,9 +3393,36 @@
     function sceneIndex() { ScrollTrigger.create({ trigger: document.body, start: "top top", end: "bottom bottom", scrub: true, onUpdate: s => gsap.set("#progress", { scaleY: s.progress }) }); document.querySelectorAll(".scene").forEach(sec => ScrollTrigger.create({ trigger: sec, start: "top center", end: "bottom center", onEnter: () => { $("sceneLabel").textContent = sec.dataset.label }, onEnterBack: () => { $("sceneLabel").textContent = sec.dataset.label } })); ScrollTrigger.create({ trigger: "#scene-hero", start: "bottom top", onEnter: () => { $("sceneIndex").classList.add("is-visible") }, onLeaveBack: () => { $("sceneIndex").classList.remove("is-visible") } }); }
     let isAvatarDay = true;
     function updateTheme() { const isAbout = $("pageAbout") && !$("pageAbout").hidden; if (isAbout && isAvatarDay) document.body.classList.add("theme-dark"); else document.body.classList.remove("theme-dark"); }
+
+    /* =============================================
+       FIX 3: Hero state restored when navigating back
+       — kill all lingering GSAP/ScrollTrigger tweens
+         and replay the hero entrance animation
+    ============================================= */
+    function resetHeroState() {
+      // Kill any stale tweens on hero elements
+      const heroEls = [
+        ".topbar", ".hero-card", ".hero-bamboo", "#heroKicker",
+        ".hero-name span>span", ".hero-rule", "#heroRole", "#heroLead",
+        ".pill", ".hero-kanji", ".tree"
+      ];
+      heroEls.forEach(sel => {
+        document.querySelectorAll(sel).forEach(el => gsap.killTweensOf(el));
+      });
+      // Clear inline styles so CSS defaults restore properly
+      const resetTargets = document.querySelectorAll(
+        ".hero-card, .hero-bamboo, .hero-kanji, .hero-name span>span, .hero-rule, #heroRole, #heroLead, .pill, .tree, #heroKicker, .topbar"
+      );
+      resetTargets.forEach(el => gsap.set(el, { clearProps: "all" }));
+      // Re-run hero entrance animation
+      hero();
+    }
+
     function setView(view, targetId, skipScroll) {
       const current = view || "home";
+      const wasHome = !$("pageHome").hidden;
       const home = current === "home";
+
       $("pageHome").hidden = !home;
       $("pageAbout").hidden = current !== "about";
 
@@ -3283,7 +3441,17 @@
         const isActive = home ? link.dataset.target === targetId : link.dataset.view === current;
         link.classList.toggle("active", !!isActive)
       });
-      requestAnimationFrame(() => ScrollTrigger.refresh());
+
+      // FIX 3: When returning to home, restore hero animations
+      if (home && !wasHome && window.gsap) {
+        requestAnimationFrame(() => {
+          ScrollTrigger.refresh();
+          resetHeroState();
+        });
+      } else {
+        requestAnimationFrame(() => ScrollTrigger.refresh());
+      }
+
       updateTheme();
       if (skipScroll) return;
       if (home && targetId) {
@@ -3291,6 +3459,7 @@
         if (target) { target.scrollIntoView({ behavior: "smooth", block: "start" }); }
       } else { window.scrollTo({ top: 0, behavior: "smooth" }); }
     }
+
     function bindNav() { document.querySelectorAll("[data-view]").forEach(link => { link.addEventListener("click", (event) => { const isNav = link.classList.contains("nav-link") || link.classList.contains("brand"); if (!isNav) return; event.preventDefault(); setView(link.dataset.view || "home", link.dataset.target || "scene-hero", false); }); }); }
     function bindWorkLinks() { document.addEventListener("click", event => { const row = event.target.closest(".work-row[data-href]"); if (!row) return; window.location.href = row.dataset.href; }); document.addEventListener("keydown", event => { const row = event.target.closest(".work-row[data-href]"); if (!row) return; if (event.key !== "Enter" && event.key !== " ") return; event.preventDefault(); window.location.href = row.dataset.href; }); }
 
@@ -3307,11 +3476,17 @@
     function posterScroll() {
       const grid = $("miniGrid"), wrapper = $("miniWrapper"), folder = $("miniFolder");
       if (!grid || !wrapper || !folder) return;
+
+      // On mobile: pure CSS vertical scroll, no GSAP pinning needed
+      const isMobile = window.matchMedia("(max-width: 480px)").matches;
+
       let refreshTimeout, isPinned = false;
+
       function openFolder() {
         if (folder.classList.contains("is-open")) return;
         folder.classList.add("is-open");
-        if (!isPinned) {
+
+        if (!isMobile && !isPinned) {
           isPinned = true;
           let distance = grid.scrollWidth - wrapper.clientWidth;
           if (distance > 0) {
@@ -3321,12 +3496,14 @@
         clearTimeout(refreshTimeout);
         refreshTimeout = setTimeout(() => ScrollTrigger.refresh(), 850);
       }
+
       function closeFolder() {
         if (!folder.classList.contains("is-open")) return;
         folder.classList.remove("is-open");
         clearTimeout(refreshTimeout);
         refreshTimeout = setTimeout(() => ScrollTrigger.refresh(), 850);
       }
+
       folder.addEventListener("mouseenter", openFolder);
       folder.addEventListener("click", (e) => {
         if (e.target.closest('.mini-head-arrow') && folder.classList.contains('is-open')) {
