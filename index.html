@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>sanjai-portfolio</title>
+  <title>Cinematic Portfolio</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
@@ -1049,6 +1049,7 @@
       padding: 10px 0 0;
       text-align: center;
       position: relative;
+      overflow: hidden;     /* flags stay contained within stage bounds */
     }
 
     .toolkit-scroll {
@@ -1207,7 +1208,9 @@
     }
 
     .footer-copy {
-      max-width: 35rem
+      max-width: 35rem;
+      position: relative;
+      z-index: 1;
     }
 
     .footer-kicker {
@@ -1644,12 +1647,17 @@
 
     .stats-box {
       display: flex;
-      gap: 40px;
+      gap: 0;          /* gap handled by dividers + stat padding */
       align-items: center;
     }
 
     .stat {
       text-align: center;
+      padding: 0 32px;  /* symmetric breathing room on each side */
+    }
+
+    .stat:first-child {
+      padding-left: 0;
     }
 
     .stat-num {
@@ -2720,26 +2728,65 @@
     ============================================= */
     @media (max-width: 480px) {
       .work { padding: 48px 0 56px; }
+
+      /* Card layout: full-width column with inner padding */
       .work-row {
-        grid-template-columns: 64px 1fr;
-        grid-template-rows: auto auto;
-        gap: 10px 12px;
-        padding: 16px 12px 16px 0;
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+        padding: 0;
+        border-radius: 12px;
+        overflow: hidden;
       }
+
+      /* Chapter label row at top */
+      .work-number {
+        min-height: unset;
+        padding: 10px 16px 8px;
+        border-right: none;
+        border-bottom: 1px solid rgba(23, 21, 17, .08);
+        flex-direction: row;
+        justify-content: flex-start;
+        align-items: center;
+        gap: 8px;
+        width: 100%;
+      }
+      .work-number strong { font-size: 1.1rem; line-height: 1; }
+      .work-number span { font-size: .7rem; letter-spacing: .18em; }
+
+      /* Main content area with padding */
+      .work-main {
+        padding: 14px 16px 0;
+      }
+
+      /* Title row: project name left, chips right */
+      .work-project {
+        font-size: 1.4rem;
+        margin-bottom: 8px;
+      }
+
+      /* Chips (tags) sit on same visual row as title via flex trick */
+      .work-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+        margin-bottom: 10px;
+      }
+      .work-tag { font-size: .65rem; padding: 3px 7px; }
+
+      /* Description */
+      .work-teaser { font-size: .97rem; line-height: 1.55; }
+
+      /* CTA area at bottom with padding */
       .work-actions {
-        grid-column: 1 / -1;
+        padding: 12px 16px 14px;
         flex-wrap: wrap;
         gap: 8px;
+        width: 100%;
       }
       .work-arrow { display: none; }
-      .work-number { min-height: 72px; padding-left: 8px; }
-      .work-number strong { font-size: 2rem; }
-      .work-number span { font-size: .72rem; }
-      .work-project { font-size: 1.45rem; }
-      .work-teaser { font-size: 1rem; line-height: 1.55; }
       .work-cta-btn { font-size: .75rem; padding: 8px 14px; }
-      .work-tags { gap: 6px; margin-bottom: 6px; }
-      .work-tag { font-size: .68rem; padding: 3px 8px; }
+
       .mini-folder { margin-top: 36px; padding: 16px; }
       .mini-grid {
         flex-wrap: wrap;
@@ -2757,9 +2804,19 @@
       .toolkit { padding: 40px 0 56px; }
       .toolkit-figure { min-height: 280px; }
       .toolkit-image { width: 100%; }
-      .toolkit-scroll { width: clamp(60px, 12vw, 100px); }
-      .toolkit-scroll.left { left: -40px; }
-      .toolkit-scroll.right { right: -40px; }
+
+      /* Flags stay inside screen with safe padding */
+      .toolkit-scroll {
+        width: clamp(50px, 10vw, 80px);
+        top: -28px;
+      }
+      .toolkit-scroll.left {
+        left: 8px;   /* safe inset from screen edge */
+      }
+      .toolkit-scroll.right {
+        right: 8px;  /* safe inset from screen edge */
+      }
+
       .toolkit-tools {
         top: 44%;
         width: 88%;
@@ -2810,9 +2867,19 @@
       .values-grid { grid-template-columns: 1fr; gap: 16px; }
       .value-card { padding: 24px 20px; }
       .value-title { font-size: 1.6rem; }
-      .stats-tools-grid { grid-template-columns: 1fr; gap: 24px; }
-      .stats-box { justify-content: flex-start; gap: 0; }
-      .stat-num { font-size: clamp(2.5rem, 10vw, 3.5rem); }
+      .stats-tools-grid { grid-template-columns: 1fr; gap: 32px; }
+      .stats-box {
+        justify-content: flex-start;
+        gap: 0;
+        border: 1px solid rgba(23, 21, 17, .1);
+        border-radius: 12px;
+        padding: 20px 16px;
+        background: rgba(255,255,255,.35);
+      }
+      .stat { padding: 0 20px; }
+      .stat:first-child { padding-left: 4px; }
+      .stat-num { font-size: clamp(2.2rem, 9vw, 3rem); }
+      .stat-divider { height: 48px; }
     }
 
     /* =============================================
@@ -2859,7 +2926,7 @@
   <div class="cursor-indicator" id="cursorIndicator" aria-hidden="true"></div>
   <header class="topbar">
     <div class="topbar-inner">
-      <a class="brand" href="#scene-hero" data-view="home" data-target="scene-hero">Sanjai<span
+      <a class="brand" href="#scene-hero" data-view="home" data-target="scene-hero">Sanjai <span
           class="brand-mark">_</span></a>
       <nav class="nav-links" aria-label="Primary">
         <a class="nav-link active" href="#scene-work" data-view="home" data-target="scene-work">Work</a>
@@ -3113,7 +3180,7 @@
   <script>
     const ASSETS = { hero: "", toolkitClosed: "Images/All-Images/Closed-Chest.png", toolkitOpen: "Images/All-Images/Open-Chest.png", skillButton: "Images/All-Images/Skill-Button.png" };
     const CONTENT = {
-      hero: { vertical: "Scene I / Stillness", kicker: "", name: ["Sanjai"], role: "UI / UX Designer", lead: "Most products are hard to use.<br>I make sure yours isn't one of them.", meta: ["Open to solving meaningful problems."] },
+      hero: { vertical: "Scene I / Stillness", kicker: "", name: ["Sanjai."], role: "UI / UX Designer", lead: "Most products are hard to use.<br>I make sure yours isn't one of them.", meta: ["Open to solving meaningful problems."] },
       work: {
         chapter: "Ch. 01", title: "Selected work", alsoMade: "Posters", projects: [{ chapter: "01", title: "Groworkz app", teaser: "One-line teaser - the problem it solves, told as a human story.", featured: true, state: "featured", ctas: [{ label: "View case study", href: "case-study/groworkz-casestudy.html", target: "_self" }, { label: "View figma", href: "https://www.figma.com/design/qUFBHbfekLLJdWY6z9SOTe/Groworkz?node-id=186-115321&t=2I7s5os6kKXSqTcs-1", target: "_blank" }], tags: [["SaaS - Mobile App", ""], ["Completed", "ready"], ["Figma", ""]] }, { chapter: "02", title: "Customer Portal App", teaser: "One-line teaser - the user problem and your solution.", featured: false, state: "ready", ctas: [{ label: "View figma", href: "https://www.figma.com/design/ztKhq2KDpFbB5uzW7rfrcb/Customer-Portal-App?node-id=22-10408&t=5CQkNnAaSOCl7AAM-1", target: "_blank" }], tags: [["Mobile App", ""], ["Completed", "ready"], ["Figma", ""]] }, { chapter: "03", title: "Ongoing project", teaser: "Chapter loading... the problem this solves.", featured: false, state: "wip", progress: 60, ctas: [{ label: "Available 22nd", href: "javascript:void(0)", target: "_self" }], tags: [["In Progress - 60%", "wip"], ["Figma", ""]] }], extras: [
           ["Poster 1", "Visual design", "<img src='Images/All-Images/poster-1.jpg' alt='Poster'>"],
@@ -3134,8 +3201,8 @@
       },
       toolkit: { chapter: "Ch. 02", title: "Toolkit", hintClosed: "Tap the chest to open", hintOpen: "Tap again to close", note: "My go-to tools, kept in one place.", tools: [{ name: "Figma", icon: "Images/All-Images/Figma.png" }, { name: "Framer", icon: "Images/All-Images/Framer.png" }, { name: "Lovable", icon: "Images/All-Images/lovable.png" }, { name: "Whimsical", icon: "Images/All-Images/whimsical.png" }, { name: "Hotjar", icon: "Images/All-Images/Hotjar.png" }, { name: "Google Analytics", icon: "Images/All-Images/google analytics.png" }, { name: "HTML", icon: "Images/All-Images/html.png" }, { name: "CSS", icon: "Images/All-Images/CSS.png" }] },
       about: { name: "Sanjai", roleline: "UI/UX Designer - Junior - Coimbatore, India", quote: "\"I design products that feel obvious in hindsight - the ones where users don't notice the design, because it just works.\"", availability: "Open to full-time roles", values: [["01", "Always be learning", "Every project is a chance to know something you didn't yesterday.", "I took on a project outside my comfort zone. It became my best work."], ["02", "Collaboration is the skill", "The best design decisions happen in conversation, not in isolation.", "My most-used tool isn't Figma. It's asking the right question."], ["03", "New industries, fresh eyes", "Not knowing an industry is an advantage you ask why things are the way they are.", "The best UX insight I ever had came from being the confused new person in the room."], ["04", "Ship it, then grow", "Waiting for perfect means waiting forever. Real feedback beats imagined polish.", "Every v1 is embarrassing. Ship it anyway."]], toolsLabel: "TOOLS I USE DAILY", tools: [{ name: "Figma", icon: "Images/All-Images/Figma.png" }, { name: "Framer", icon: "Images/All-Images/Framer.png" }, { name: "Lovable", icon: "Images/All-Images/lovable.png" }, { name: "Whimsical", icon: "Images/All-Images/whimsical.png" }, { name: "Hotjar", icon: "Images/All-Images/Hotjar.png" }, { name: "Google Analytics", icon: "Images/All-Images/google analytics.png" }, { name: "HTML", icon: "Images/All-Images/html.png" }, { name: "CSS", icon: "Images/All-Images/CSS.png" }] },
-      links: { kicker: "Everything, one place", title: "Reach Me", lead: "A product, a problem, or even just a rough idea <br><br>I’d love to hear it.<br>Let’s turn it into something people actually enjoy using.", resume: { eyebrow: "Latest version - Updated [Month Year]", title: "Sanjai - Resume", meta: "UI/UX Designer", cta: "Download", href: "https://drive.google.com/file/d/1RaWWIA8Fn6S4_u0yQsixgUlQs58ju7nk/view?usp=sharing" }, groups: [{ label: "Professional", items: [{ icon: "linkedin", title: "LinkedIn", meta: "linkedin.com/in/sanjaidesigan - where the recruiters live", badge: "Active", badgeClass: "hot", href: "https://linkedin.com/in/sanjaidesigan", actionLabel: "Go to" }, { icon: "instagram", title: "Instagram", meta: "@sanju_desigan - visual updates and everyday work", badge: "Social", badgeClass: "", href: "https://instagram.com/sanju_desigan", actionLabel: "Go to" }] }, { label: "Design Work", items: [{ icon: "behance", title: "Behance", meta: "behance.net/rakultecikan - longer case studies", badge: "Portfolio", badgeClass: "", href: "https://behance.net/rakultecikan", actionLabel: "View" }] }, { label: "Say Hello", items: [{ icon: "mail", title: "Email me", meta: "sanjai.creative88@gmail.com - I reply within 24 hrs, usually faster", badge: "Best way", badgeClass: "hot", href: "mailto:sanjai.creative88@gmail.com", actionLabel: "Click here" }] }] },
-      footer: { kicker: "End Chapter - Final Chapter", title: ["Let's build", "something", "worth using."], text: "If you made it here, we probably have similar taste. I'm currently looking for full-time UI/UX roles at product-focused teams.", email: ["sanjai.creative88@gmail.com", "mailto:sanjai.creative88@gmail.com"], kanji: "&#32080;", links: [["LinkedIn", "https://linkedin.com/in/sanjaidesigan"], ["Instagram", "https://instagram.com/sanju_desigan"], ["Resume", "https://drive.google.com/file/d/1RaWWIA8Fn6S4_u0yQsixgUlQs58ju7nk/view?usp=sharing"]] }
+      links: { kicker: "Everything, one place", title: "Reach Me", lead: "A product, a problem, or even just a rough idea <br><br>I’d love to hear it.<br>Let’s turn it into something people actually enjoy using.", resume: { eyebrow: "Latest version - Updated [Month Year]", title: "Sanjai - Resume", meta: "UI/UX Designer", cta: "Download", href: "https://drive.google.com/file/d/1LeBFoEm4L6humh6sqXoKBhY8aaBRHxCC/view?usp=sharing" }, groups: [{ label: "Professional", items: [{ icon: "linkedin", title: "LinkedIn", meta: "linkedin.com/in/sanjaidesigan - where the recruiters live", badge: "Active", badgeClass: "hot", href: "https://linkedin.com/in/sanjaidesigan", actionLabel: "Go to" }, { icon: "instagram", title: "Instagram", meta: "@sanju_desigan - visual updates and everyday work", badge: "Social", badgeClass: "", href: "https://instagram.com/sanju_desigan", actionLabel: "Go to" }] }, { label: "Design Work", items: [{ icon: "behance", title: "Behance", meta: "behance.net/rakultecikan - longer case studies", badge: "Portfolio", badgeClass: "", href: "https://behance.net/rakultecikan", actionLabel: "View" }] }, { label: "Say Hello", items: [{ icon: "mail", title: "Email me", meta: "sanjai.creative88@gmail.com - I reply within 24 hrs, usually faster", badge: "Best way", badgeClass: "hot", href: "mailto:sanjai.creative88@gmail.com", actionLabel: "Click here" }] }] },
+      footer: { kicker: "End Chapter - Final Chapter", title: ["Let's build", "something", "worth using."], text: "If you made it here, we probably have similar taste. I'm currently looking for full-time UI/UX roles at product-focused teams.", email: ["sanjai.creative88@gmail.com", "mailto:sanjai.creative88@gmail.com"], kanji: "&#32080;", links: [["LinkedIn", "https://linkedin.com/in/sanjaidesigan"], ["Instagram", "https://instagram.com/sanju_desigan"], ["Resume", "https://drive.google.com/file/d/1LeBFoEm4L6humh6sqXoKBhY8aaBRHxCC/view?usp=sharing"]] }
     };
     const $ = id => document.getElementById(id);
     function linkGlyph(kind) {
