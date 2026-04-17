@@ -503,9 +503,9 @@
        HERO (≤480px)
     ============================================= */
     @media (max-width: 480px) {
-      .hero { min-height: unset; padding: 90px 0 8vw; }
-      .hero-wrap { padding-top: 0; min-height: unset; }
-      .hero-card { width: 100%; margin-top: 56px; padding: 14px; min-height: unset; }
+      .hero { min-height: 100svh; padding: 90px 0 8vw; display: flex; flex-direction: column; justify-content: center; }
+      .hero-wrap { padding-top: 0; min-height: auto; }
+      .hero-card { width: 100%; margin-top: 24px; padding: 14px; min-height: unset; }
       .hero-card-inner { min-height: unset; padding: 12px 10px; }
       .hero-name { font-size: clamp(3rem, 18vw, 4.4rem); margin: 20px 0 14px; }
       .hero-role { font-size: .88rem; letter-spacing: .1em; }
@@ -1225,9 +1225,18 @@
     }
 
     function inkTransition() {
-      gsap.set("#scene-hero", { filter: "url(#ink-dissolve)" });
-      gsap.to("#inkDisplacement", { attr: { scale: 700 }, scrollTrigger: { trigger: "#scene-work", start: "top 60%", end: "top -10%", scrub: 2.5 } });
-      gsap.to("#scene-hero", { opacity: 0, scrollTrigger: { trigger: "#scene-work", start: "top 50%", end: "top -10%", scrub: 2.5 } });
+      gsap.to("#inkDisplacement", { 
+        attr: { scale: 700 }, 
+        scrollTrigger: { 
+          trigger: "#scene-hero", 
+          start: "top -10px", 
+          end: "bottom 10%", 
+          scrub: 2.5,
+          onEnter: () => gsap.set("#scene-hero", { filter: "url(#ink-dissolve)" }),
+          onLeaveBack: () => gsap.set("#scene-hero", { filter: "none", clearProps: "filter" })
+        } 
+      });
+      gsap.to("#scene-hero", { opacity: 0, scrollTrigger: { trigger: "#scene-hero", start: "top -10px", end: "bottom 0%", scrub: 2.5 } });
     }
 
     function posterScroll() {
