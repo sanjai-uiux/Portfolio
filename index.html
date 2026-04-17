@@ -61,7 +61,7 @@
     .title { margin: 0; font-family: "Cormorant Garamond", serif; font-size: clamp(3.2rem, 8vw, 6.6rem); line-height: .92; font-weight: 600 }
     .copy { margin: 1.4rem 0 0; max-width: 35rem; font-size: clamp(1.15rem, 2vw, 1.25rem); line-height: 1.9; color: var(--soft) }
 
-    .topbar { position: fixed; top: 0; left: 0; right: 0; z-index: 30; padding: 30px 0; background: linear-gradient(180deg, rgba(245, 243, 239, .94), rgba(245, 243, 239, .72) 72%, rgba(245, 243, 239, 0)); backdrop-filter: blur(10px) }
+    .topbar { position: fixed; top: 0; left: 0; right: 0; z-index: 50; padding: 30px 0; background: linear-gradient(180deg, rgba(245, 243, 239, .94), rgba(245, 243, 239, .72) 72%, rgba(245, 243, 239, 0)); backdrop-filter: blur(10px) }
     .topbar-inner { width: min(1180px, calc(100vw - 24px)); margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 24px }
     .brand { font-family: "Cormorant Garamond", serif; font-size: 2rem; font-weight: 500; letter-spacing: .01em; transition: transform .3s ease, color .3s ease }
     @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
@@ -503,9 +503,9 @@
        HERO (≤480px)
     ============================================= */
     @media (max-width: 480px) {
-      .hero { min-height: 100svh; padding: 90px 0 8vw; display: flex; flex-direction: column; justify-content: center; }
-      .hero-wrap { padding-top: 0; min-height: auto; }
-      .hero-card { width: 100%; margin-top: 24px; padding: 14px; min-height: unset; }
+      .hero { min-height: unset; padding: 90px 0 8vw; }
+      .hero-wrap { padding-top: 0; min-height: unset; }
+      .hero-card { width: 100%; margin-top: 56px; padding: 14px; min-height: unset; }
       .hero-card-inner { min-height: unset; padding: 12px 10px; }
       .hero-name { font-size: clamp(3rem, 18vw, 4.4rem); margin: 20px 0 14px; }
       .hero-role { font-size: .88rem; letter-spacing: .1em; }
@@ -523,21 +523,21 @@
     ============================================= */
     @media (max-width: 480px) {
       .work { padding-bottom: 80px; }
-      .work-row { display: flex; flex-direction: column; gap: 0; padding: 0; border-radius: 12px; overflow: hidden; }
-      .work-number { min-height: unset; padding: 10px 16px 8px; border-right: none; border-bottom: 1px solid rgba(23, 21, 17, .08); flex-direction: row; justify-content: flex-start; align-items: center; gap: 8px; width: 100%; }
-      .work-number strong { font-size: 1.1rem; line-height: 1; }
-      .work-number span { font-size: .7rem; letter-spacing: .18em; }
-      .work-row.state-wip .work-main { position: relative; }
-      .work-row.state-wip .work-tags { position: absolute; top: 14px; right: 16px; margin-bottom: 0; flex-direction: column; align-items: flex-end; gap: 4px; max-width: 48%; }
-      .work-row.state-wip .work-tag { font-size: .58rem; padding: 2px 6px; letter-spacing: .1em; }
-      .work-main { padding: 14px 16px 0; }
-      .work-project { font-size: 1.4rem; margin-bottom: 8px; }
-      .work-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px; }
-      .work-tag { font-size: .65rem; padding: 3px 7px; }
-      .work-teaser { font-size: .97rem; line-height: 1.55; }
-      .work-actions { padding: 12px 16px 14px; flex-wrap: wrap; gap: 8px; width: 100%; }
+      .work-row { display: flex; flex-direction: column; gap: 0; padding: 0 0 20px 0; border-radius: 12px; overflow: hidden; }
+      .work-row.state-wip { padding-bottom: 32px; }
+      .work-number { min-height: unset; padding: 14px 18px 12px; border-right: none; border-bottom: 1px solid rgba(23, 21, 17, .08); flex-direction: row; justify-content: flex-start; align-items: center; gap: 10px; width: 100%; }
+      .work-number strong { font-size: 1.15rem; line-height: 1; }
+      .work-number span { font-size: .75rem; letter-spacing: .18em; }
+
+      .work-main { padding: 16px 18px 4px; }
+      .work-project { font-size: 1.5rem; margin-bottom: 10px; }
+      .work-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+      .work-tag { font-size: .68rem; padding: 4px 8px; }
+      .work-teaser { font-size: 1.05rem; line-height: 1.6; }
+      .work-actions { padding: 14px 18px 4px; flex-wrap: wrap; gap: 10px; width: 100%; z-index: 1; }
       .work-arrow { display: none; }
       .work-cta-btn { font-size: .75rem; padding: 8px 14px; }
+      .work-progress { position: absolute; bottom: 0; left: 0; width: 100%; margin: 0; border-radius: 0; height: 4px; z-index: 2; }
       .mini-folder { margin-top: 36px; padding: 16px; }
       .mini-folder.is-open .mini-wrapper { max-height: 420px; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; scrollbar-width: thin; scrollbar-color: rgba(143,61,52,.4) transparent; }
       .mini-folder.is-open .mini-wrapper::-webkit-scrollbar { width: 3px; }
@@ -1043,18 +1043,20 @@
       else document.body.classList.remove("theme-dark");
     }
 
+    let heroTl;
+    let heroStCreated = false;
     function resetHeroState() {
-      const heroEls = [".topbar", ".hero-card", ".hero-bamboo", "#heroKicker", ".hero-name span>span", ".hero-rule", "#heroRole", "#heroLead", ".pill", ".hero-kanji", ".tree"];
-      heroEls.forEach(sel => { document.querySelectorAll(sel).forEach(el => gsap.killTweensOf(el)); });
-      const resetTargets = document.querySelectorAll(".hero-card, .hero-bamboo, .hero-kanji, .hero-name span>span, .hero-rule, #heroRole, #heroLead, .pill, .tree, #heroKicker, .topbar");
-      resetTargets.forEach(el => gsap.set(el, { clearProps: "all" }));
-      hero();
+      if (heroTl) heroTl.restart();
     }
 
     function setView(view, targetId, skipScroll) {
       const current = view || "home";
       const wasHome = !$("pageHome").hidden;
       const home = current === "home";
+
+      if (home && !wasHome && window.gsap && typeof heroTl !== "undefined") {
+        heroTl.pause(0);
+      }
 
       $("pageHome").hidden = !home;
       $("pageAbout").hidden = current !== "about";
@@ -1151,7 +1153,7 @@
     }
 
     function hero() {
-      gsap.timeline({ defaults: { ease: "power2.out" } })
+      heroTl = gsap.timeline({ defaults: { ease: "power2.out" } })
         .from(".topbar", { y: -18, opacity: 0, duration: .8 })
         .from(".hero-card", { y: 36, opacity: 0, duration: 1 }, "-=.45")
         .from(".hero-bamboo", { x: 26, opacity: 0, duration: 1.25 }, "-=.78")
@@ -1163,11 +1165,15 @@
         .from(".pill", { y: 14, opacity: 0, stagger: .08, duration: .7 }, "-=.6")
         .from(".hero-kanji", { x: 30, opacity: 0, duration: 1.2 }, "-=1.15")
         .fromTo(".tree", { opacity: 0, filter: "blur(14px)" }, { opacity: .06, filter: "blur(6px)", y: 0, scale: 1, duration: 1.8 }, "-=1");
-      gsap.to(".m1", { xPercent: 14, yPercent: -12, ease: "none", scrollTrigger: { trigger: "#scene-hero", start: "top top", end: "bottom top", scrub: 1.2 } });
-      gsap.to(".m2", { xPercent: -10, yPercent: -8, ease: "none", scrollTrigger: { trigger: "#scene-hero", start: "top top", end: "bottom top", scrub: 1.4 } });
-      gsap.to(".hero-card", { yPercent: -4, ease: "none", scrollTrigger: { trigger: "#scene-hero", start: "top top", end: "bottom top", scrub: 1.1 } });
-      gsap.to(".hero-kanji", { yPercent: 10, ease: "none", scrollTrigger: { trigger: "#scene-hero", start: "top top", end: "bottom top", scrub: 1.1 } });
-      gsap.to(".hero-bamboo", { yPercent: -4, xPercent: 0, rotate: 0, ease: "none", scrollTrigger: { trigger: "#scene-hero", start: "top top", end: "bottom top", scrub: 0.8 } });
+      
+      if (!heroStCreated) {
+        heroStCreated = true;
+        gsap.to(".m1", { xPercent: 14, yPercent: -12, ease: "none", scrollTrigger: { trigger: "#scene-hero", start: "top top", end: "bottom top", scrub: 1.2 } });
+        gsap.to(".m2", { xPercent: -10, yPercent: -8, ease: "none", scrollTrigger: { trigger: "#scene-hero", start: "top top", end: "bottom top", scrub: 1.4 } });
+        gsap.to(".hero-card", { yPercent: -4, ease: "none", scrollTrigger: { trigger: "#scene-hero", start: "top top", end: "bottom top", scrub: 1.1 } });
+        gsap.to(".hero-kanji", { yPercent: 10, ease: "none", scrollTrigger: { trigger: "#scene-hero", start: "top top", end: "bottom top", scrub: 1.1 } });
+        gsap.to(".hero-bamboo", { yPercent: -4, xPercent: 0, rotate: 0, ease: "none", scrollTrigger: { trigger: "#scene-hero", start: "top top", end: "bottom top", scrub: 0.8 } });
+      }
     }
 
     function workSection() {
