@@ -202,9 +202,8 @@
     ============================================= */
     .toolkit-scroll {
       position: absolute;
-      top: -40px;
-      /* FIXED: increased from clamp(90px,16vw,240px) */
-      width: clamp(140px, 20vw, 280px);
+      top: -60px;
+      width: clamp(200px, 30vw, 420px);
       height: auto;
       object-fit: contain;
       object-position: top center;
@@ -213,7 +212,7 @@
       animation: flagWind 4s ease-in-out infinite alternate;
       z-index: 0;
       filter: drop-shadow(0 16px 32px rgba(23, 21, 17, 0.18));
-      max-height: 320px;
+      max-height: 560px;
     }
     .toolkit-scroll.left { left: 0; transform-origin: top left; }
     .toolkit-scroll.right { right: 0; transform-origin: top right; animation-delay: -2s; }
